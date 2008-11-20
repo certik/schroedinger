@@ -141,6 +141,10 @@ ord = OrderView("Polynomial Orders", 0, 2*h, w, h)
 mat1 = MatrixView("Matrix A", w, 2*h, w, h)
 #mat2 = MatrixView("Matrix A'", 2*w, 2*h, w, h)
 
+rs = None
+
+precision = 30.0
+
 for it in range(5000):
 
     mesh.save("refined2.mesh")
@@ -160,6 +164,27 @@ for it in range(5000):
         vec = sols[:, i]
         sln.set_fe_solution(space, pss, vec)
         s.append(sln)
+
+    if rs is not None:
+        def minus2(sols, i):
+            sln = Solution()
+            vec = sols[:, i]
+            sln.set_fe_solution(space, pss, -vec)
+            return sln
+        pairs, flips = make_pairs(rs, s, d1, d2)
+        #print "_"*40
+        #print pairs, flips
+        #print len(rs), len(s)
+        #from time import sleep
+        #sleep(3)
+        #stop
+        s2 = []
+        for j, flip in zip(pairs, flips):
+            if flip:
+                s2.append(minus2(sols,j))
+            else:
+                s2.append(s[j])
+        s = s2
 
     #ord.show(space)
     #for i in range(min(len(s), 4)):
@@ -231,12 +256,21 @@ for it in range(5000):
     print "-"*60
     print "calc error (iter=%d):" % it
     eig_converging = 0
+    errors = []
     for i in range(min(len(s), len(rs))):
-        error = hp.calc_error(s[eig_converging], rs[eig_converging]) * 100
-        print "eig %d: %g%%" % (eig_converging, error)
-        if error > 1.0:
-            break
-        eig_converging += 1
+        error = hp.calc_error(s[i], rs[i]) * 100
+        errors.append(error)
+        print "eig %d: %g%%" % (i, error)
+    if errors[0] > precision/3:
+        eig_converging = 0
+    elif errors[3] > precision:
+        eig_converging = 3
+    elif errors[1] > precision:
+        eig_converging = 1
+    elif errors[2] > precision/3:
+        eig_converging = 2
+    else:
+        precision /= 2
     print "picked: %d" % eig_converging
     print "-"*60
     error = hp.calc_error(s[eig_converging], rs[eig_converging]) * 100
