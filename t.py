@@ -260,18 +260,15 @@ for it in range(5000):
     for i in range(min(len(s), len(rs))):
         error = hp.calc_error(s[i], rs[i]) * 100
         errors.append(error)
-        if i in [0, 2]:
-            prec = precision/3
-        else:
-            prec = precision
+        prec = precision
         print "eig %d: %g%%  precision goal: %g%%" % (i, error, prec)
-    if errors[0] > precision/3:
+    if errors[0] > precision:
         eig_converging = 0
     elif errors[3] > precision:
         eig_converging = 3
     elif errors[1] > precision:
         eig_converging = 1
-    elif errors[2] > precision/3:
+    elif errors[2] > precision:
         eig_converging = 2
     else:
         precision /= 2

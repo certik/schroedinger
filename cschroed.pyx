@@ -19,7 +19,7 @@ cdef scalar bilinear_form_schroed(RealFunction* fu, RealFunction* fv,
 cdef double F(double x, double y):
     #return 0.
     #return (x**2+y**2)/2
-    return -0.5/c_sqrt(x**2+y**2)
+    return -0.5/c_sqrt(x**2+y**2)+0.00001*x
 
 cdef double F2(double x, double y):
     #return 0.
