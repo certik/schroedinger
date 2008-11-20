@@ -15,6 +15,10 @@ def make_pairs(s, rs, d1, d2, method="robust"):
     Where d = min(d1, d2).
 
     Both d1() and d2() are expensive operations.
+
+    It returns (pairs, flips) where pairs is a list of indices into the "rs"
+    array and flips is a list of True/False showing if the eigenvalue is
+    flipped or not. See the test() function in this file for more information.
     """
 
     if method=="robust":
