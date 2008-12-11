@@ -382,40 +382,40 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
 def main():
     version = "0.1-git"
 
-    parser = OptionParser(usage="[options] args", version = "%prog " + version )
-    parser.add_option( "-v", "--verbose",
-                       action = "store_true", dest = "verbose",
-                       default = False, help = "produce verbose output during solving" )
-    parser.add_option( "-q", "--quiet",
-                       action = "store_true", dest = "quiet",
-                       default = False, help = "be totally quiet, e.g. only errors are written to stdout" )
-    parser.add_option( "--well",
-                       action = "store_true", dest = "well",
-                       default = False, help = "solve infinite potential well (particle in a box) problem" )
-    parser.add_option( "--oscillator",
-                       action = "store_true", dest = "oscillator",
-                       default = False, help = "solve spherically symmetric linear harmonic oscillator (1 electron) problem" )
-    parser.add_option( "--hydrogen",
-                       action = "store_true", dest = "hydrogen",
-                       default = False, help = "solve the hydrogen atom" )
-    parser.add_option( "--dft",
-                       action = "store_true", dest = "dft",
-                       default = False, help = "perform dft calculation" )
-    parser.add_option( "--three-points",
-                       action = "store_true", dest = "three",
-                       default = False, help = "three points geometry calculation" )
-    parser.add_option( "--iter",
-                       action = "store", type="int", dest = "iter",
-                       default = 5, help = "the number of iterations to calculate [default %default]" )
-    parser.add_option( "--neigs",
-                       action = "store", type="int", dest = "neigs",
-                       default = 4, help = "the number of eigenvectors to calculate [default %default]" )
-    parser.add_option( "-p", "--plot",
-                       action = "store_true", dest = "plot",
-                       default = False, help = "plot the solver progress (solutions, refined solutions, errors)" )
-    parser.add_option( "--exit",
-                       action = "store_true", dest = "exit",
-                       default = False, help = "exit at the end of calculation (with --plot), i.e. do not leave the plot windows open" )
+    parser = OptionParser(usage="[options] args", version="%prog " + version)
+    parser.add_option("-v", "--verbose",
+                       action="store_true", dest="verbose",
+                       default=False, help="produce verbose output during solving")
+    parser.add_option("-q", "--quiet",
+                       action="store_true", dest="quiet",
+                       default=False, help="be totally quiet, e.g. only errors are written to stdout")
+    parser.add_option("--well",
+                       action="store_true", dest="well",
+                       default=False, help="solve infinite potential well (particle in a box) problem")
+    parser.add_option("--oscillator",
+                       action="store_true", dest="oscillator",
+                       default=False, help="solve spherically symmetric linear harmonic oscillator (1 electron) problem")
+    parser.add_option("--hydrogen",
+                       action="store_true", dest="hydrogen",
+                       default=False, help="solve the hydrogen atom")
+    parser.add_option("--dft",
+                       action="store_true", dest="dft",
+                       default=False, help="perform dft calculation")
+    parser.add_option("--three-points",
+                       action="store_true", dest="three",
+                       default=False, help="three points geometry calculation")
+    parser.add_option("--iter",
+                       action="store", type="int", dest="iter",
+                       default=5, help="the number of iterations to calculate [default %default]")
+    parser.add_option("--neigs",
+                       action="store", type="int", dest="neigs",
+                       default=4, help="the number of eigenvectors to calculate [default %default]")
+    parser.add_option("-p", "--plot",
+                       action="store_true", dest="plot",
+                       default=False, help="plot the solver progress (solutions, refined solutions, errors)")
+    parser.add_option("--exit",
+                       action="store_true", dest="exit",
+                       default=False, help ="exit at the end of calculation (with --plot), i.e. do not leave the plot windows open")
     parser.add_option("--report",
                        action="store_true", dest="report",
                        default=False, help="create a report")
