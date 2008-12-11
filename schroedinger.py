@@ -10,7 +10,7 @@ for usage and help.
 
 """
 
-from math import pi
+from math import pi, sqrt
 from optparse import OptionParser
 
 from numpy import zeros, array
@@ -117,9 +117,12 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     set_verbose(verbose_level == 2)
     pot = {"well": 0, "oscillator": 1, "hydrogen": 2}
     pot_type = pot[potential]
+    mesh = Mesh()
+    mesh.load("square.mesh")
     if potential == "well":
-        # XXX: read this automatically from the mesh:
-        a = 60
+        # Read the width of the mesh automatically. This assumes there is just
+        # one square element:
+        a = sqrt(mesh.get_element(0).get_area())
         # set N high enough, so that we get enough analytical eigenvalues:
         N = 10
         levels = []
@@ -139,8 +142,6 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         print n_eigs
         print E_exact
         raise Exception("We don't have enough analytical eigenvalues.")
-    mesh = Mesh()
-    mesh.load("square.mesh")
     #mesh.refine_element(0)
     mesh.refine_all_elements()
     #mesh.refine_all_elements()
