@@ -183,9 +183,17 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
 
     precision = 30.0
 
+    if verbose_level >= 1:
+        print "Problem initialized. Starting calculation."
+
     for it in range(iter):
+        if verbose_level >= 1:
+            print "-"*80
+            print "Starting iteration %d." % it
 
         #mesh.save("refined2.mesh")
+        if verbose_level >= 1:
+            print "Assembling the matrices A, B."
         dp1.create_matrix()
         dp1.assemble_matrix_and_rhs()
         dp2.create_matrix()
@@ -194,7 +202,11 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
             print "converting matrices A, B"
         A = dp1.get_matrix()
         B = dp2.get_matrix()
+        if verbose_level >= 1:
+            print "Solving the problem Ax=EBx."
         sols = solve(A, B, verbose_level == 2)
+        if verbose_level >= 1:
+            print "   \-Done."
         s = []
 
         n = sols.shape[1]
@@ -204,6 +216,8 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
             sln.set_fe_solution(space, pss, vec)
             s.append(sln)
 
+        if verbose_level >= 1:
+            print "Matching solutions."
         if rs is not None:
             def minus2(sols, i):
                 sln = Solution()
@@ -232,11 +246,15 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
                 views[i].set_title("Iter: %d, eig: %d" % (it, i))
             #mat1.show(dp1)
 
+        if verbose_level >= 1:
+            print "reference: initializing mesh."
         rmesh.copy(mesh)
         rmesh.refine_all_elements()
         rspace.copy_orders(space, 1)
         rspace.assign_dofs()
 
+        if verbose_level >= 1:
+            print "reference: assembling the matrices A, B."
         rp1.create_matrix()
         rp1.assemble_matrix_and_rhs()
         rp2.create_matrix()
@@ -245,7 +263,11 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
             print "converting matrices A, B"
         A = rp1.get_matrix()
         B = rp2.get_matrix()
+        if verbose_level >= 1:
+            print "reference: solving the problem Ax=EBx."
         sols = solve(A, B, verbose_level == 2)
+        if verbose_level >= 1:
+            print "   \-Done."
         rs = []
 
         n = sols.shape[1]
@@ -255,6 +277,8 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
             sln.set_fe_solution(rspace, pss, vec)
             rs.append(sln)
 
+        if verbose_level >= 1:
+            print "reference: matching solutions."
         def minus(sols, i):
             sln = Solution()
             vec = sols[:, i]
@@ -288,6 +312,8 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
                 viewse[i].set_title("Error plot Iter: %d, eig: %d" % (it, i))
 
 
+        if verbose_level >= 1:
+            print "Calculating errors."
         hp = H1OrthoHP(space)
         #print "-"*40
         #print hp.calc_error(s[1], rs[0]) * 100
@@ -320,6 +346,8 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
             print "picked: %d" % eig_converging
             print "-"*60
         error = hp.calc_error(s[eig_converging], rs[eig_converging]) * 100
+        if verbose_level >= 1:
+            print "Adapting the mesh."
         hp.adapt(0.3)
         space.assign_dofs()
 
