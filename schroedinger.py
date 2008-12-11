@@ -135,11 +135,13 @@ def schroedinger_solver(iter=2, verbose=False, plot=False,
     #bview.show(space)
 
     dp1 = DiscreteProblem()
+    dp1.set_quiet(not verbose)
     dp1.set_num_equations(1)
     dp1.set_spaces(space)
     dp1.set_pss(pss)
     set_forms8(dp1)
     dp2 = DiscreteProblem()
+    dp2.set_quiet(not verbose)
     dp2.set_num_equations(1)
     dp2.set_spaces(space)
     dp2.set_pss(pss)
