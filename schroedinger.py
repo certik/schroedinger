@@ -415,6 +415,9 @@ def main():
     parser.add_option( "--dft",
                        action = "store_true", dest = "dft",
                        default = False, help = "perform dft calculation" )
+    parser.add_option( "--iter",
+                       action = "store", type="int", dest = "iter",
+                       default = 5, help = "the number of iterations to calculate [default %default]" )
     parser.add_option( "-p", "--plot",
                        action = "store_true", dest = "plot",
                        default = False, help = "plot the solver progress (solutions, refined solutions, errors)" )
@@ -429,11 +432,11 @@ def main():
     else:
         verbose_level = 1
     if options.well:
-        schroedinger_solver(iter=5, verbose_level=verbose_level, plot=options.plot, potential="well")
+        schroedinger_solver(iter=options.iter, verbose_level=verbose_level, plot=options.plot, potential="well")
     elif options.oscillator:
-        schroedinger_solver(iter=5, verbose_level=verbose_level, plot=options.plot, potential="oscillator")
+        schroedinger_solver(iter=options.iter, verbose_level=verbose_level, plot=options.plot, potential="oscillator")
     elif options.hydrogen:
-        schroedinger_solver(iter=5, verbose_level=verbose_level, plot=options.plot, potential="hydrogen")
+        schroedinger_solver(iter=options.iter, verbose_level=verbose_level, plot=options.plot, potential="hydrogen")
     elif options.dft:
         raise NotImplementedError()
     else:
