@@ -20,7 +20,7 @@ from pysparse import spmatrix, jdsym, precon, itsolvers
 from hermes2d import initialize, finalize, Mesh, H1Shapeset, \
         PrecalcShapeset, H1Space, DiscreteProblem, Solution, ScalarView, \
         BaseView, MeshView, H1OrthoHP, OrderView, \
-        MatrixView
+        MatrixView, set_verbose
 
 from cschroed import set_forms7, set_forms8
 
@@ -114,6 +114,7 @@ def schroedinger_solver(iter=2, verbose=False, plot=False,
 
     Returns the eigenvalues and eigenvectors.
     """
+    set_verbose(verbose)
     mesh = Mesh()
     mesh.load("square.mesh")
     #mesh.refine_element(0)
@@ -135,13 +136,15 @@ def schroedinger_solver(iter=2, verbose=False, plot=False,
     #bview.show(space)
 
     dp1 = DiscreteProblem()
-    dp1.set_quiet(not verbose)
+    # this is induced by set_verbose():
+    #dp1.set_quiet(not verbose)
     dp1.set_num_equations(1)
     dp1.set_spaces(space)
     dp1.set_pss(pss)
     set_forms8(dp1)
     dp2 = DiscreteProblem()
-    dp2.set_quiet(not verbose)
+    # this is induced by set_verbose():
+    #dp2.set_quiet(not verbose)
     dp2.set_num_equations(1)
     dp2.set_spaces(space)
     dp2.set_pss(pss)
