@@ -51,7 +51,7 @@ def convert_mat(mtx):
         A.update_add_at( mtx.data[ii], [i] * n_in_row, mtx.indices[ii] )
     return A
 
-def solve(A, B, verbose=False):
+def solve(A, B, n_eigs=4, verbose=False):
     """
     Solves the generalized eigenvalue problem.
 
@@ -73,31 +73,10 @@ def solve(A, B, verbose=False):
     K = precon.jacobi(Atau)
     A = A.to_sss()
     B = B.to_sss()
-    n_eigs = 4
     kconv, lmbd, Q, it, it_in = jdsym.jdsym(A, B, K, n_eigs, tau, 1e-6, 150,
             itsolvers.qmrs)
-    #if verbose:
-    #    print "number of converged eigenvalues:", kconv
-    #levels = []
-    #for n1 in range(1, 10):
-    #    for n2 in range(1, 10):
-    #        levels.append(n1**2 + n2**2)
-    #levels.sort()
-
-    # well
-    #E_exact = [pi**2/2 * m for m in levels]
-
-    # oscillator
-    #E_exact = [1] + [2]*2 + [3]*3 + [4]*4 + [5]*5 + [6]*6
-
-    # hydrogen
-    #E_exact = [-1./2/(n-0.5)**2/4 for n in [1]+[2]*3+[3]*5 + [4]*8 + [5]*15]
-    #if verbose:
-    #    print "eigenvalues (i, FEM, exact, error):"
-    #    for i, E in enumerate(lmbd):
-    #        a = E
-    #        b = E_exact[i]
-    #        print "%2d: %10f %10f %f%%" % (i, a, b, abs((a-b)/b)*100)
+    if verbose:
+        print "number of converged eigenvalues:", kconv
     return lmbd, Q
 
 def show_sol(s):
@@ -112,16 +91,18 @@ def print_eigs(eigs, E_exact=None):
     assert E_exact is not None
 
     assert len(eigs) <= len(E_exact)
+    print "      n      FEM       exact    error"
     for i, E in enumerate(eigs):
         a = E
         b = E_exact[i]
         print "    %2d: %10f %10f %f%%" % (i, a, b, abs((a-b)/b)*100)
 
-def schroedinger_solver(iter=2, verbose_level=1, plot=False,
+def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         potential="hydrogen"):
     """
     One particle Schroedinger equation solver.
 
+    n_eigs ... the number of the lowest eigenvectors to calculate
     iter ... the number of adaptive iterations to do
     verbose_level ...
             0 ... quiet
@@ -154,6 +135,10 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
         Z = 1 # atom number
         E_exact = [-float(Z)**2/2/(n-0.5)**2/4 for n in [1]+[2]*3+[3]*5 +\
                                     [4]*8 + [5]*15]
+    if len(E_exact) < n_eigs:
+        print n_eigs
+        print E_exact
+        raise Exception("We don't have enough analytical eigenvalues.")
     mesh = Mesh()
     mesh.load("square.mesh")
     #mesh.refine_element(0)
@@ -239,7 +224,7 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
         if verbose_level >= 1:
             n = A.shape[0]
             print "Solving the problem Ax=EBx  (%d x %d)." % (n, n)
-        eigs, sols = solve(A, B, verbose_level == 2)
+        eigs, sols = solve(A, B, n_eigs, verbose_level == 2)
         if verbose_level >= 1:
             print "   \-Done."
             print_eigs(eigs, E_exact)
@@ -304,7 +289,7 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
         if verbose_level >= 1:
             n = A.shape[0]
             print "reference: solving the problem Ax=EBx  (%d x %d)." % (n, n)
-        eigs, sols = solve(A, B, verbose_level == 2)
+        eigs, sols = solve(A, B, n_eigs, verbose_level == 2)
         if verbose_level >= 1:
             print "   \-Done."
             print_eigs(eigs, E_exact)
@@ -420,6 +405,9 @@ def main():
     parser.add_option( "--iter",
                        action = "store", type="int", dest = "iter",
                        default = 5, help = "the number of iterations to calculate [default %default]" )
+    parser.add_option( "--neigs",
+                       action = "store", type="int", dest = "neigs",
+                       default = 4, help = "the number of eigenvectors to calculate [default %default]" )
     parser.add_option( "-p", "--plot",
                        action = "store_true", dest = "plot",
                        default = False, help = "plot the solver progress (solutions, refined solutions, errors)" )
@@ -434,11 +422,11 @@ def main():
     else:
         verbose_level = 1
     if options.well:
-        schroedinger_solver(iter=options.iter, verbose_level=verbose_level, plot=options.plot, potential="well")
+        schroedinger_solver(n_eigs=options.neigs, iter=options.iter, verbose_level=verbose_level, plot=options.plot, potential="well")
     elif options.oscillator:
-        schroedinger_solver(iter=options.iter, verbose_level=verbose_level, plot=options.plot, potential="oscillator")
+        schroedinger_solver(n_eigs=options.neigs, iter=options.iter, verbose_level=verbose_level, plot=options.plot, potential="oscillator")
     elif options.hydrogen:
-        schroedinger_solver(iter=options.iter, verbose_level=verbose_level, plot=options.plot, potential="hydrogen")
+        schroedinger_solver(n_eigs=options.neigs, iter=options.iter, verbose_level=verbose_level, plot=options.plot, potential="hydrogen")
     elif options.dft:
         raise NotImplementedError()
     else:
