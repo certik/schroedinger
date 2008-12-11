@@ -51,17 +51,19 @@ def convert_mat(mtx):
         A.update_add_at( mtx.data[ii], [i] * n_in_row, mtx.indices[ii] )
     return A
 
-def solve(A, B):
+def solve(A, B, verbose=False):
     """
     Solves the generalized eigenvalue problem.
 
     A, B ... scipy matrices
     """
-    print "converting to pysparse"
+    if verbose:
+        print "converting to pysparse"
     n = A.shape[0]
     A = convert_mat(A)
     B = convert_mat(B)
-    print "solving (%d x %d)" % (n, n)
+    if verbose:
+        print "solving (%d x %d)" % (n, n)
     Atau = A.copy()
     tau = -1
     Atau.shift(-tau, B)
@@ -71,7 +73,8 @@ def solve(A, B):
     n_eigs = 4
     kconv, lmbd, Q, it, it_in = jdsym.jdsym(A, B, K, n_eigs, tau, 1e-6, 150,
             itsolvers.qmrs)
-    print "number of converged eigenvalues:", kconv
+    if verbose:
+        print "number of converged eigenvalues:", kconv
     #levels = []
     #for n1 in range(1, 10):
     #    for n2 in range(1, 10):
@@ -86,23 +89,28 @@ def solve(A, B):
 
     # hydrogen
     E_exact = [-1./2/(n-0.5)**2/4 for n in [1]+[2]*3+[3]*5 + [4]*8 + [5]*15]
-    print "eigenvalues (i, FEM, exact, error):"
-    for i, E in enumerate(lmbd):
-        a = E
-        b = E_exact[i]
-        print "%2d: %10f %10f %f%%" % (i, a, b, abs((a-b)/b)*100)
+    if verbose:
+        print "eigenvalues (i, FEM, exact, error):"
+        for i, E in enumerate(lmbd):
+            a = E
+            b = E_exact[i]
+            print "%2d: %10f %10f %f%%" % (i, a, b, abs((a-b)/b)*100)
     return Q
 
 def show_sol(s):
     view = ScalarView("Eigenvector", 0, 0, 400, 400)
     view.show(s)
 
-def schroedinger_solver(iter=2, plot=False, potential="hydrogen"):
+def schroedinger_solver(iter=2, verbose=False, plot=False,
+        potential="hydrogen"):
     """
     One particle Schroedinger equation solver.
 
     iter ... the number of adaptive iterations to do
+    verbose ... if True, print progress to stdout
     plot ... plot the progress (solutions, refined solutions, errors)
+    potential ... the V(x) for which to solve, one of:
+            well, oscillator, hydrogen
 
     Returns the eigenvalues and eigenvectors.
     """
@@ -172,10 +180,11 @@ def schroedinger_solver(iter=2, plot=False, potential="hydrogen"):
         dp1.assemble_matrix_and_rhs()
         dp2.create_matrix()
         dp2.assemble_matrix_and_rhs()
-        print "converting matrices A, B"
+        if verbose:
+            print "converting matrices A, B"
         A = dp1.get_matrix()
         B = dp2.get_matrix()
-        sols = solve(A, B)
+        sols = solve(A, B, verbose)
         s = []
 
         n = sols.shape[1]
@@ -222,10 +231,11 @@ def schroedinger_solver(iter=2, plot=False, potential="hydrogen"):
         rp1.assemble_matrix_and_rhs()
         rp2.create_matrix()
         rp2.assemble_matrix_and_rhs()
-        print "converting matrices A, B"
+        if verbose:
+            print "converting matrices A, B"
         A = rp1.get_matrix()
         B = rp2.get_matrix()
-        sols = solve(A, B)
+        sols = solve(A, B, verbose)
         rs = []
 
         n = sols.shape[1]
@@ -275,15 +285,17 @@ def schroedinger_solver(iter=2, plot=False, potential="hydrogen"):
         #print hp.calc_error(s[1], rs[2]) * 100
         #print hp.calc_error(s[1], rs[3]) * 100
         #print "-"*40
-        print "-"*60
-        print "calc error (iter=%d):" % it
+        if verbose:
+            print "-"*60
+            print "calc error (iter=%d):" % it
         eig_converging = 0
         errors = []
         for i in range(min(len(s), len(rs))):
             error = hp.calc_error(s[i], rs[i]) * 100
             errors.append(error)
             prec = precision
-            print "eig %d: %g%%  precision goal: %g%%" % (i, error, prec)
+            if verbose:
+                print "eig %d: %g%%  precision goal: %g%%" % (i, error, prec)
         if errors[0] > precision:
             eig_converging = 0
         elif errors[3] > precision:
@@ -294,8 +306,9 @@ def schroedinger_solver(iter=2, plot=False, potential="hydrogen"):
             eig_converging = 2
         else:
             precision /= 2
-        print "picked: %d" % eig_converging
-        print "-"*60
+        if verbose:
+            print "picked: %d" % eig_converging
+            print "-"*60
         error = hp.calc_error(s[eig_converging], rs[eig_converging]) * 100
         hp.adapt(0.3)
         space.assign_dofs()
@@ -306,6 +319,9 @@ def main():
     version = "0.0-git"
 
     parser = OptionParser(usage="[options] args", version = "%prog " + version )
+    parser.add_option( "-v", "--verbose",
+                       action = "store_true", dest = "verbose",
+                       default = False, help = "produce verbose output during solving" )
     parser.add_option( "--well",
                        action = "store_true", dest = "well",
                        default = False, help = "solve infinite potential well (particle in a box) problem" )
@@ -323,14 +339,14 @@ def main():
                        default = False, help = "plot the solver progress (solutions, refined solutions, errors)" )
     parser.add_option( "--exit",
                        action = "store_true", dest = "exit",
-                       default = False, help = "exit at the end of calculation (i.e. do not leave the plot windows open)" )
+                       default = False, help = "exit at the end of calculation (with --plot), i.e. do not leave the plot windows open" )
     options, args = parser.parse_args()
     if options.well:
-        schroedinger_solver(iter=2, plot=options.plot, potential="well")
+        schroedinger_solver(iter=2, verbose=options.verbose, plot=options.plot, potential="well")
     elif options.oscillator:
-        schroedinger_solver(iter=2, plot=options.plot, potential="oscillator")
+        schroedinger_solver(iter=2, verbose=options.verbose, plot=options.plot, potential="oscillator")
     elif options.hydrogen:
-        schroedinger_solver(iter=2, plot=options.plot, potential="hydrogen")
+        schroedinger_solver(iter=2, verbose=options.verbose, plot=options.plot, potential="hydrogen")
     elif options.dft:
         raise NotImplementedError()
     else:
