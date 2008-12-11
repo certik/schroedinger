@@ -364,6 +364,8 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             eig_converging = 2
         else:
             precision /= 2
+        # uncomment the following line to only converge to some eigenvalue:
+        #eig_converging = 3
         if verbose_level >= 1:
             print "picked: %d" % eig_converging
         error = hp.calc_error(s[eig_converging], rs[eig_converging]) * 100
