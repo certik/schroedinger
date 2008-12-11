@@ -343,12 +343,6 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         if verbose_level >= 1:
             print "Calculating errors."
         hp = H1OrthoHP(space)
-        #print "-"*40
-        #print hp.calc_error(s[1], rs[0]) * 100
-        #print hp.calc_error(s[1], rs[1]) * 100
-        #print hp.calc_error(s[1], rs[2]) * 100
-        #print hp.calc_error(s[1], rs[3]) * 100
-        #print "-"*40
         if verbose_level == 2:
             print "-"*60
             print "calc error (iter=%d):" % it
@@ -358,7 +352,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             error = hp.calc_error(s[i], rs[i]) * 100
             errors.append(error)
             prec = precision
-            if verbose_level == 2:
+            if verbose_level >= 1:
                 print "eig %d: %g%%  precision goal: %g%%" % (i, error, prec)
         if errors[0] > precision:
             eig_converging = 0
@@ -370,9 +364,8 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             eig_converging = 2
         else:
             precision /= 2
-        if verbose_level == 2:
+        if verbose_level >= 1:
             print "picked: %d" % eig_converging
-            print "-"*60
         error = hp.calc_error(s[eig_converging], rs[eig_converging]) * 100
         if verbose_level >= 1:
             print "Adapting the mesh."
