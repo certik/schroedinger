@@ -98,7 +98,7 @@ def print_eigs(eigs, E_exact=None):
         print "    %2d: %10f %10f %f%%" % (i, a, b, abs((a-b)/b)*100)
 
 def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
-        potential="hydrogen"):
+        potential="hydrogen", report=False):
     """
     One particle Schroedinger equation solver.
 
@@ -111,6 +111,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     plot ... plot the progress (solutions, refined solutions, errors)
     potential ... the V(x) for which to solve, one of:
             well, oscillator, hydrogen
+    report ... it will save raw data to a file, useful for creating graphs etc.
 
     Returns the eigenvalues and eigenvectors.
     """
@@ -415,6 +416,9 @@ def main():
     parser.add_option( "--exit",
                        action = "store_true", dest = "exit",
                        default = False, help = "exit at the end of calculation (with --plot), i.e. do not leave the plot windows open" )
+    parser.add_option("--report",
+                       action="store_true", dest="report",
+                       default=False, help="create a report")
     options, args = parser.parse_args()
     if options.verbose:
         verbose_level = 2
@@ -427,6 +431,7 @@ def main():
             "iter": options.iter,
             "verbose_level": verbose_level,
             "plot": options.plot,
+            "report": options.report,
             }
     if options.well:
         kwargs.update({"potential": "well"})
