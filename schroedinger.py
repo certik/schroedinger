@@ -321,7 +321,7 @@ def schroedinger_solver(iter=2, verbose=False, plot=False,
 
 
 def main():
-    version = "0.0-git"
+    version = "0.1-git"
 
     parser = OptionParser(usage="[options] args", version = "%prog " + version )
     parser.add_option( "-v", "--verbose",
