@@ -16,10 +16,16 @@ cdef scalar bilinear_form_schroed(RealFunction* fu, RealFunction* fv,
     RefMap* ru, RefMap* rv):
   return int_u_v(fu, fv, ru, rv)
 
+cdef int potential_type
+
 cdef double F(double x, double y):
-    #return 0.
-    #return (x**2+y**2)/2
-    return -0.5/c_sqrt(x**2+y**2)+0.00001*x
+    global potential_type
+    if potential_type == 0:
+        return 0.
+    elif potential_type == 1:
+        return (x**2+y**2)/2+0.00001*x
+    else:
+        return -0.5/c_sqrt(x**2+y**2)+0.00001*x
 
 cdef double F2(double x, double y):
     #return 0.
@@ -44,7 +50,9 @@ def set_forms7(DiscreteProblem dp):
     dp.thisptr.set_bilinear_form(0, 0, &bilinear_form_schroed)
     #dp.thisptr.set_linear_form(0, &linear_form);
 
-def set_forms8(DiscreteProblem dp):
+def set_forms8(DiscreteProblem dp, pot_type):
+    global potential_type
+    potential_type = pot_type
     dp.thisptr.set_bilinear_form(0, 0, &bilinear_form_schroed1)
     #dp.thisptr.set_linear_form(0, &linear_form);
 

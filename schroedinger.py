@@ -115,6 +115,8 @@ def schroedinger_solver(iter=2, verbose=False, plot=False,
     Returns the eigenvalues and eigenvectors.
     """
     set_verbose(verbose)
+    pot = {"well": 0, "oscillator": 1, "hydrogen": 2}
+    pot_type = pot[potential]
     mesh = Mesh()
     mesh.load("square.mesh")
     #mesh.refine_element(0)
@@ -141,7 +143,7 @@ def schroedinger_solver(iter=2, verbose=False, plot=False,
     dp1.set_num_equations(1)
     dp1.set_spaces(space)
     dp1.set_pss(pss)
-    set_forms8(dp1)
+    set_forms8(dp1, pot_type)
     dp2 = DiscreteProblem()
     # this is induced by set_verbose():
     #dp2.set_quiet(not verbose)
@@ -156,7 +158,7 @@ def schroedinger_solver(iter=2, verbose=False, plot=False,
     rp1 = DiscreteProblem()
     rp1.copy(dp1)
     rp1.set_spaces(rspace);
-    set_forms8(rp1)
+    set_forms8(rp1, pot_type)
 
     rp2 = DiscreteProblem()
     rp2.copy(dp2)
