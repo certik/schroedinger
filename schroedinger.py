@@ -422,21 +422,26 @@ def main():
         verbose_level = 0
     else:
         verbose_level = 1
+    kwargs = {
+            "n_eigs": options.neigs,
+            "iter": options.iter,
+            "verbose_level": verbose_level,
+            "plot": options.plot,
+            }
     if options.well:
-        schroedinger_solver(n_eigs=options.neigs, iter=options.iter, verbose_level=verbose_level, plot=options.plot, potential="well")
+        kwargs.update({"potential": "well"})
     elif options.oscillator:
-        schroedinger_solver(n_eigs=options.neigs, iter=options.iter, verbose_level=verbose_level, plot=options.plot, potential="oscillator")
+        kwargs.update({"potential": "oscillator"})
     elif options.hydrogen:
-        schroedinger_solver(n_eigs=options.neigs, iter=options.iter, verbose_level=verbose_level, plot=options.plot, potential="hydrogen")
+        kwargs.update({"potential": "hydrogen"})
     elif options.dft:
         raise NotImplementedError()
     elif options.three:
-        schroedinger_solver(n_eigs=options.neigs, iter=options.iter,
-                verbose_level=verbose_level, plot=options.plot,
-                potential="three-points")
+        kwargs.update({"potential": "three-points"})
     else:
         parser.print_help()
         return
+    schroedinger_solver(**kwargs)
 
     if options.plot and not options.exit:
         # leave the plot windows open, the user needs to close them with
