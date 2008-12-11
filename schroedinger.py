@@ -104,6 +104,19 @@ def show_sol(s):
     view = ScalarView("Eigenvector", 0, 0, 400, 400)
     view.show(s)
 
+def print_eigs(eigs, E_exact=None):
+    """
+    Nicely prints the eigenvalues "eigs", together with analytical solution.
+
+    """
+    assert E_exact is not None
+
+    assert len(eigs) <= len(E_exact)
+    for i, E in enumerate(eigs):
+        a = E
+        b = E_exact[i]
+        print "    %2d: %10f %10f %f%%" % (i, a, b, abs((a-b)/b)*100)
+
 def schroedinger_solver(iter=2, verbose_level=1, plot=False,
         potential="hydrogen"):
     """
@@ -123,6 +136,24 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
     set_verbose(verbose_level == 2)
     pot = {"well": 0, "oscillator": 1, "hydrogen": 2}
     pot_type = pot[potential]
+    if potential == "well":
+        # XXX: read this automatically from the mesh:
+        a = 60
+        # set N high enough, so that we get enough analytical eigenvalues:
+        N = 10
+        levels = []
+        for n1 in range(1, N):
+            for n2 in range(1, N):
+                levels.append(n1**2 + n2**2)
+        levels.sort()
+
+        E_exact = [pi**2/(2.*a**2) * m for m in levels]
+    elif potential == "oscillator":
+        E_exact = [1] + [2]*2 + [3]*3 + [4]*4 + [5]*5 + [6]*6
+    elif potential == "hydrogen":
+        Z = 1 # atom number
+        E_exact = [-float(Z)**2/2/(n-0.5)**2/4 for n in [1]+[2]*3+[3]*5 +\
+                                    [4]*8 + [5]*15]
     mesh = Mesh()
     mesh.load("square.mesh")
     #mesh.refine_element(0)
@@ -210,6 +241,7 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
         eigs, sols = solve(A, B, verbose_level == 2)
         if verbose_level >= 1:
             print "   \-Done."
+            print_eigs(eigs, E_exact)
         s = []
 
         n = sols.shape[1]
@@ -273,6 +305,7 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
         eigs, sols = solve(A, B, verbose_level == 2)
         if verbose_level >= 1:
             print "   \-Done."
+            print_eigs(eigs, E_exact)
         rs = []
 
         n = sols.shape[1]
@@ -398,9 +431,9 @@ def main():
     if options.well:
         schroedinger_solver(iter=5, verbose_level=verbose_level, plot=options.plot, potential="well")
     elif options.oscillator:
-        schroedinger_solver(iter=2, verbose_level=verbose_level, plot=options.plot, potential="oscillator")
+        schroedinger_solver(iter=5, verbose_level=verbose_level, plot=options.plot, potential="oscillator")
     elif options.hydrogen:
-        schroedinger_solver(iter=2, verbose_level=verbose_level, plot=options.plot, potential="hydrogen")
+        schroedinger_solver(iter=5, verbose_level=verbose_level, plot=options.plot, potential="hydrogen")
     elif options.dft:
         raise NotImplementedError()
     else:
