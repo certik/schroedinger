@@ -56,6 +56,9 @@ def solve(A, B, verbose=False):
     Solves the generalized eigenvalue problem.
 
     A, B ... scipy matrices
+
+    returns (lmbd, Q), where lmbd are the eigenvalues and Q is a numpy array of
+    solutions
     """
     if verbose:
         print "converting to pysparse"
@@ -73,8 +76,8 @@ def solve(A, B, verbose=False):
     n_eigs = 4
     kconv, lmbd, Q, it, it_in = jdsym.jdsym(A, B, K, n_eigs, tau, 1e-6, 150,
             itsolvers.qmrs)
-    if verbose:
-        print "number of converged eigenvalues:", kconv
+    #if verbose:
+    #    print "number of converged eigenvalues:", kconv
     #levels = []
     #for n1 in range(1, 10):
     #    for n2 in range(1, 10):
@@ -88,14 +91,14 @@ def solve(A, B, verbose=False):
     #E_exact = [1] + [2]*2 + [3]*3 + [4]*4 + [5]*5 + [6]*6
 
     # hydrogen
-    E_exact = [-1./2/(n-0.5)**2/4 for n in [1]+[2]*3+[3]*5 + [4]*8 + [5]*15]
-    if verbose:
-        print "eigenvalues (i, FEM, exact, error):"
-        for i, E in enumerate(lmbd):
-            a = E
-            b = E_exact[i]
-            print "%2d: %10f %10f %f%%" % (i, a, b, abs((a-b)/b)*100)
-    return Q
+    #E_exact = [-1./2/(n-0.5)**2/4 for n in [1]+[2]*3+[3]*5 + [4]*8 + [5]*15]
+    #if verbose:
+    #    print "eigenvalues (i, FEM, exact, error):"
+    #    for i, E in enumerate(lmbd):
+    #        a = E
+    #        b = E_exact[i]
+    #        print "%2d: %10f %10f %f%%" % (i, a, b, abs((a-b)/b)*100)
+    return lmbd, Q
 
 def show_sol(s):
     view = ScalarView("Eigenvector", 0, 0, 400, 400)
@@ -204,7 +207,7 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
         B = dp2.get_matrix()
         if verbose_level >= 1:
             print "Solving the problem Ax=EBx."
-        sols = solve(A, B, verbose_level == 2)
+        eigs, sols = solve(A, B, verbose_level == 2)
         if verbose_level >= 1:
             print "   \-Done."
         s = []
@@ -240,6 +243,8 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
             s = s2
 
         if plot:
+            if verbose_level >= 1:
+                print "plotting: solution"
             ord.show(space)
             for i in range(min(len(s), 4)):
                 views[i].show(s[i])
@@ -265,7 +270,7 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
         B = rp2.get_matrix()
         if verbose_level >= 1:
             print "reference: solving the problem Ax=EBx."
-        sols = solve(A, B, verbose_level == 2)
+        eigs, sols = solve(A, B, verbose_level == 2)
         if verbose_level >= 1:
             print "   \-Done."
         rs = []
@@ -303,9 +308,11 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
         rs = rs2
 
         if plot:
+            if verbose_level >= 1:
+                print "plotting: solution, reference solution, errors"
             for i in range(min(len(s), len(rs), 4)):
-                views[i].show(s[i])
-                views[i].set_title("Iter: %d, eig: %d" % (it, i))
+                #views[i].show(s[i])
+                #views[i].set_title("Iter: %d, eig: %d" % (it, i))
                 viewsm[i].show(rs[i])
                 viewsm[i].set_title("Ref. Iter: %d, eig: %d" % (it, i))
                 viewse[i].show((s[i]-rs[i])**2)
