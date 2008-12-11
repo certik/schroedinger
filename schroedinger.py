@@ -237,7 +237,8 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
         A = dp1.get_matrix()
         B = dp2.get_matrix()
         if verbose_level >= 1:
-            print "Solving the problem Ax=EBx."
+            n = A.shape[0]
+            print "Solving the problem Ax=EBx  (%d x %d)." % (n, n)
         eigs, sols = solve(A, B, verbose_level == 2)
         if verbose_level >= 1:
             print "   \-Done."
@@ -301,7 +302,8 @@ def schroedinger_solver(iter=2, verbose_level=1, plot=False,
         A = rp1.get_matrix()
         B = rp2.get_matrix()
         if verbose_level >= 1:
-            print "reference: solving the problem Ax=EBx."
+            n = A.shape[0]
+            print "reference: solving the problem Ax=EBx  (%d x %d)." % (n, n)
         eigs, sols = solve(A, B, verbose_level == 2)
         if verbose_level >= 1:
             print "   \-Done."
