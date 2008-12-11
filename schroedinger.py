@@ -97,7 +97,15 @@ def show_sol(s):
     view = ScalarView("Eigenvector", 0, 0, 400, 400)
     view.show(s)
 
-def doit():
+def schroedinger_solver(iter=2, plot=False, potential="hydrogen"):
+    """
+    One particle Schroedinger equation solver.
+
+    iter ... the number of adaptive iterations to do
+    plot ... plot the progress (solutions, refined solutions, errors)
+
+    Returns the eigenvalues and eigenvectors.
+    """
     mesh = Mesh()
     mesh.load("square.mesh")
     #mesh.refine_element(0)
@@ -157,7 +165,7 @@ def doit():
 
     precision = 30.0
 
-    for it in range(5000):
+    for it in range(iter):
 
         mesh.save("refined2.mesh")
         dp1.create_matrix()
@@ -198,11 +206,12 @@ def doit():
                     s2.append(s[j])
             s = s2
 
-        #ord.show(space)
-        #for i in range(min(len(s), 4)):
-        #    views[i].show(s[i])
-        #    views[i].set_title("Iter: %d, eig: %d" % (it, i))
-        #mat1.show(dp1)
+        if plot:
+            ord.show(space)
+            for i in range(min(len(s), 4)):
+                views[i].show(s[i])
+                views[i].set_title("Iter: %d, eig: %d" % (it, i))
+            #mat1.show(dp1)
 
         rmesh.copy(mesh)
         rmesh.refine_all_elements()
@@ -249,13 +258,14 @@ def doit():
                 rs2.append(rs[j])
         rs = rs2
 
-        #for i in range(min(len(s), len(rs), 4)):
-        #    views[i].show(s[i])
-        #    views[i].set_title("Iter: %d, eig: %d" % (it, i))
-        #    viewsm[i].show(rs[i])
-        #    viewsm[i].set_title("Ref. Iter: %d, eig: %d" % (it, i))
-        #    viewse[i].show((s[i]-rs[i])**2)
-        #    viewse[i].set_title("Error plot Iter: %d, eig: %d" % (it, i))
+        if plot:
+            for i in range(min(len(s), len(rs), 4)):
+                views[i].show(s[i])
+                views[i].set_title("Iter: %d, eig: %d" % (it, i))
+                viewsm[i].show(rs[i])
+                viewsm[i].set_title("Ref. Iter: %d, eig: %d" % (it, i))
+                viewse[i].show((s[i]-rs[i])**2)
+                viewse[i].set_title("Error plot Iter: %d, eig: %d" % (it, i))
 
 
         hp = H1OrthoHP(space)
@@ -296,15 +306,41 @@ def main():
     version = "0.0-git"
 
     parser = OptionParser(usage="[options] args", version = "%prog " + version )
+    parser.add_option( "--well",
+                       action = "store_true", dest = "well",
+                       default = False, help = "solve infinite potential well (particle in a box) problem" )
+    parser.add_option( "--oscillator",
+                       action = "store_true", dest = "oscillator",
+                       default = False, help = "solve spherically symmetric linear harmonic oscillator (1 electron) problem" )
+    parser.add_option( "--hydrogen",
+                       action = "store_true", dest = "hydrogen",
+                       default = False, help = "solve the hydrogen atom" )
     parser.add_option( "--dft",
                        action = "store_true", dest = "dft",
-                       default = False, help = "Do dft calculation" )
+                       default = False, help = "perform dft calculation" )
+    parser.add_option( "-p", "--plot",
+                       action = "store_true", dest = "plot",
+                       default = False, help = "plot the solver progress (solutions, refined solutions, errors)" )
+    parser.add_option( "--exit",
+                       action = "store_true", dest = "exit",
+                       default = False, help = "exit at the end of calculation (i.e. do not leave the plot windows open)" )
     options, args = parser.parse_args()
-    if options.dft:
-        doit()
-        finalize()
+    if options.well:
+        schroedinger_solver(iter=2, plot=options.plot, potential="well")
+    elif options.oscillator:
+        schroedinger_solver(iter=2, plot=options.plot, potential="oscillator")
+    elif options.hydrogen:
+        schroedinger_solver(iter=2, plot=options.plot, potential="hydrogen")
+    elif options.dft:
+        raise NotImplementedError()
     else:
         parser.print_help()
+        return
+
+    if options.plot and not options.exit:
+        # leave the plot windows open, the user needs to close them with
+        # "ctrl-C":
+        finalize()
 
 if __name__ == '__main__':
     main()
