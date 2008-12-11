@@ -115,7 +115,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     Returns the eigenvalues and eigenvectors.
     """
     set_verbose(verbose_level == 2)
-    pot = {"well": 0, "oscillator": 1, "hydrogen": 2}
+    pot = {"well": 0, "oscillator": 1, "hydrogen": 2, "three-points": 3}
     pot_type = pot[potential]
     mesh = Mesh()
     mesh.load("square.mesh")
@@ -138,6 +138,8 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         Z = 1 # atom number
         E_exact = [-float(Z)**2/2/(n-0.5)**2/4 for n in [1]+[2]*3+[3]*5 +\
                                     [4]*8 + [5]*15]
+    else:
+        E_exact = [1.]*50
     if len(E_exact) < n_eigs:
         print n_eigs
         print E_exact
@@ -398,6 +400,9 @@ def main():
     parser.add_option( "--dft",
                        action = "store_true", dest = "dft",
                        default = False, help = "perform dft calculation" )
+    parser.add_option( "--three-points",
+                       action = "store_true", dest = "three",
+                       default = False, help = "three points geometry calculation" )
     parser.add_option( "--iter",
                        action = "store", type="int", dest = "iter",
                        default = 5, help = "the number of iterations to calculate [default %default]" )
@@ -425,6 +430,10 @@ def main():
         schroedinger_solver(n_eigs=options.neigs, iter=options.iter, verbose_level=verbose_level, plot=options.plot, potential="hydrogen")
     elif options.dft:
         raise NotImplementedError()
+    elif options.three:
+        schroedinger_solver(n_eigs=options.neigs, iter=options.iter,
+                verbose_level=verbose_level, plot=options.plot,
+                potential="three-points")
     else:
         parser.print_help()
         return
