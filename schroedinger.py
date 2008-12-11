@@ -101,20 +101,23 @@ def show_sol(s):
     view = ScalarView("Eigenvector", 0, 0, 400, 400)
     view.show(s)
 
-def schroedinger_solver(iter=2, verbose=False, plot=False,
+def schroedinger_solver(iter=2, verbose_level=1, plot=False,
         potential="hydrogen"):
     """
     One particle Schroedinger equation solver.
 
     iter ... the number of adaptive iterations to do
-    verbose ... if True, print progress to stdout
+    verbose_level ...
+            0 ... quiet
+            1 ... only moderate output (default)
+            2 ... lot's of output
     plot ... plot the progress (solutions, refined solutions, errors)
     potential ... the V(x) for which to solve, one of:
             well, oscillator, hydrogen
 
     Returns the eigenvalues and eigenvectors.
     """
-    set_verbose(verbose)
+    set_verbose(verbose_level == 2)
     pot = {"well": 0, "oscillator": 1, "hydrogen": 2}
     pot_type = pot[potential]
     mesh = Mesh()
@@ -182,16 +185,16 @@ def schroedinger_solver(iter=2, verbose=False, plot=False,
 
     for it in range(iter):
 
-        mesh.save("refined2.mesh")
+        #mesh.save("refined2.mesh")
         dp1.create_matrix()
         dp1.assemble_matrix_and_rhs()
         dp2.create_matrix()
         dp2.assemble_matrix_and_rhs()
-        if verbose:
+        if verbose_level == 2:
             print "converting matrices A, B"
         A = dp1.get_matrix()
         B = dp2.get_matrix()
-        sols = solve(A, B, verbose)
+        sols = solve(A, B, verbose_level == 2)
         s = []
 
         n = sols.shape[1]
@@ -238,11 +241,11 @@ def schroedinger_solver(iter=2, verbose=False, plot=False,
         rp1.assemble_matrix_and_rhs()
         rp2.create_matrix()
         rp2.assemble_matrix_and_rhs()
-        if verbose:
+        if verbose_level == 2:
             print "converting matrices A, B"
         A = rp1.get_matrix()
         B = rp2.get_matrix()
-        sols = solve(A, B, verbose)
+        sols = solve(A, B, verbose_level == 2)
         rs = []
 
         n = sols.shape[1]
@@ -292,7 +295,7 @@ def schroedinger_solver(iter=2, verbose=False, plot=False,
         #print hp.calc_error(s[1], rs[2]) * 100
         #print hp.calc_error(s[1], rs[3]) * 100
         #print "-"*40
-        if verbose:
+        if verbose_level == 2:
             print "-"*60
             print "calc error (iter=%d):" % it
         eig_converging = 0
@@ -301,7 +304,7 @@ def schroedinger_solver(iter=2, verbose=False, plot=False,
             error = hp.calc_error(s[i], rs[i]) * 100
             errors.append(error)
             prec = precision
-            if verbose:
+            if verbose_level == 2:
                 print "eig %d: %g%%  precision goal: %g%%" % (i, error, prec)
         if errors[0] > precision:
             eig_converging = 0
@@ -313,7 +316,7 @@ def schroedinger_solver(iter=2, verbose=False, plot=False,
             eig_converging = 2
         else:
             precision /= 2
-        if verbose:
+        if verbose_level == 2:
             print "picked: %d" % eig_converging
             print "-"*60
         error = hp.calc_error(s[eig_converging], rs[eig_converging]) * 100
@@ -329,6 +332,9 @@ def main():
     parser.add_option( "-v", "--verbose",
                        action = "store_true", dest = "verbose",
                        default = False, help = "produce verbose output during solving" )
+    parser.add_option( "-q", "--quiet",
+                       action = "store_true", dest = "quiet",
+                       default = False, help = "be totally quiet, e.g. only errors are written to stdout" )
     parser.add_option( "--well",
                        action = "store_true", dest = "well",
                        default = False, help = "solve infinite potential well (particle in a box) problem" )
@@ -348,12 +354,18 @@ def main():
                        action = "store_true", dest = "exit",
                        default = False, help = "exit at the end of calculation (with --plot), i.e. do not leave the plot windows open" )
     options, args = parser.parse_args()
+    if options.verbose:
+        verbose_level = 2
+    elif options.quiet:
+        verbose_level = 0
+    else:
+        verbose_level = 1
     if options.well:
-        schroedinger_solver(iter=2, verbose=options.verbose, plot=options.plot, potential="well")
+        schroedinger_solver(iter=5, verbose_level=verbose_level, plot=options.plot, potential="well")
     elif options.oscillator:
-        schroedinger_solver(iter=2, verbose=options.verbose, plot=options.plot, potential="oscillator")
+        schroedinger_solver(iter=2, verbose_level=verbose_level, plot=options.plot, potential="oscillator")
     elif options.hydrogen:
-        schroedinger_solver(iter=2, verbose=options.verbose, plot=options.plot, potential="hydrogen")
+        schroedinger_solver(iter=2, verbose_level=verbose_level, plot=options.plot, potential="hydrogen")
     elif options.dft:
         raise NotImplementedError()
     else:
