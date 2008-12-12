@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 from tables import openFile
-from pylab import plot, show, legend, grid, xlabel, ylabel
+from pylab import plot, show, legend, grid, xlabel, ylabel, yscale
 
 print "plotting"
 h5file = openFile("report.h5")
@@ -17,11 +17,13 @@ eig_errors = table.col("eig_errors")
 for i in range(len(eig_errors[0])):
     eig = [a[i] for a in eig_errors]
     plot(x, eig, linewidth=2, label="eigenvector %d" % i)
+    plot(x, eig, "kD")
     print i
 h5file.close()
 
 xlabel("DOF")
 ylabel("error in %")
+yscale("log", basey=10)
 grid(True)
 legend()
 show()
