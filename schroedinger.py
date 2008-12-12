@@ -118,6 +118,20 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     set_verbose(verbose_level == 2)
     pot = {"well": 0, "oscillator": 1, "hydrogen": 2, "three-points": 3}
     pot_type = pot[potential]
+    if report:
+        from timeit import default_timer as clock
+        from tables import IsDescription, UInt32Col, Float32Col, openFile
+        class Iteration(IsDescription):
+            n = UInt32Col()
+            DOF = UInt32Col()
+            DOF_reference = UInt32Col()
+            cpu_solve = Float32Col()
+            cpu_solve_reference = Float32Col()
+        h5file = openFile("report.h5", mode = "w", title = "Simulation data")
+        group = h5file.createGroup("/", 'schroed', 'Schroedinger solver')
+        table = h5file.createTable(group, 'sim', Iteration, "Simulation")
+        iteration = table.row
+
     mesh = Mesh()
     mesh.load("square.mesh")
     if potential == "well":
@@ -213,6 +227,8 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         if verbose_level >= 1:
             print "-"*80
             print "Starting iteration %d." % it
+        if report:
+            iteration["n"] = it
 
         #mesh.save("refined2.mesh")
         if verbose_level >= 1:
@@ -228,7 +244,15 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         if verbose_level >= 1:
             n = A.shape[0]
             print "Solving the problem Ax=EBx  (%d x %d)." % (n, n)
+        if report:
+            n = A.shape[0]
+            iteration["DOF"] = n
+        if report:
+            t = clock()
         eigs, sols = solve(A, B, n_eigs, verbose_level == 2)
+        if report:
+            t = clock() - t
+            iteration["cpu_solve"] = t
         if verbose_level >= 1:
             print "   \-Done."
             print_eigs(eigs, E_exact)
@@ -293,7 +317,15 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         if verbose_level >= 1:
             n = A.shape[0]
             print "reference: solving the problem Ax=EBx  (%d x %d)." % (n, n)
+        if report:
+            n = A.shape[0]
+            iteration["DOF_reference"] = n
+        if report:
+            t = clock()
         eigs, sols = solve(A, B, n_eigs, verbose_level == 2)
+        if report:
+            t = clock() - t
+            iteration["cpu_solve_reference"] = t
         if verbose_level >= 1:
             print "   \-Done."
             print_eigs(eigs, E_exact)
@@ -376,6 +408,11 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             print "Adapting the mesh."
         hp.adapt(0.3)
         space.assign_dofs()
+        if report:
+            iteration.append()
+            table.flush()
+    if report:
+        h5file.close()
 
 
 
