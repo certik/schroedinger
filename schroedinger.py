@@ -130,6 +130,10 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             cpu_solve = Float32Col()
             cpu_solve_reference = Float32Col()
             eig_errors = Float64Col(shape=(n_eigs,))
+            eigenvalues = Float64Col(shape=(n_eigs,))
+            # XXX -- don't know
+            #eigenvectors = Float64Col(shape(n_eigs,))
+            eigenvalues_reference = Float64Col(shape=(n_eigs,))
         h5file = openFile(report_filename, mode = "a",
                 title = "Simulation data")
         if hasattr(h5file.root, "schroed"):
@@ -267,6 +271,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         if report:
             t = clock() - t
             iteration["cpu_solve"] = t
+            iteration["eigenvalues"] = array(eigs)
         if verbose_level >= 1:
             print "   \-Done."
             print_eigs(eigs, E_exact)
@@ -340,6 +345,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         if report:
             t = clock() - t
             iteration["cpu_solve_reference"] = t
+            iteration["eigenvalues_reference"] = array(eigs)
         if verbose_level >= 1:
             print "   \-Done."
             print_eigs(eigs, E_exact)
