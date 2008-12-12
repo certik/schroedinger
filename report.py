@@ -8,26 +8,22 @@ print "plotting"
 h5file = openFile("report.h5")
 table = h5file.root.schroed.single
 x = table.col("DOF")
-eig_errors = table.col("eig_errors")
-for i in range(len(eig_errors[0])):
-    eig = [a[i] for a in eig_errors]
-    plot(x, eig, linewidth=2, label="eigenvector %d" % i)
-    plot(x, eig, "kD")
-    print i
+y = table.col("cpu_solve")
+plot(x, y, linewidth=2, label="single")
+plot(x, y, "kD")
 
 for i in range(4):
     table = getattr(h5file.root.schroed, "eig%d" % i)
     x = table.col("DOF")
-    eig_errors = table.col("eig_errors")
-    eig = [a[i] for a in eig_errors]
-    plot(x, eig, linewidth=2, label="multimesh eigenvector %d" % i)
-    plot(x, eig, "rD")
+    y = table.col("cpu_solve")
+    plot(x, y, linewidth=2, label="multimesh eigenvector %d" % i)
+    plot(x, y, "rD")
     print i
 h5file.close()
 
 xlabel("DOF")
-ylabel("error in %")
+ylabel("cpu time [s]")
 yscale("log", basey=10)
 grid(True)
-legend()
+legend(loc="lower right")
 show()
