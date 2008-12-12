@@ -98,7 +98,8 @@ def print_eigs(eigs, E_exact=None):
         print "    %2d: %10f %10f %f%%" % (i, a, b, abs((a-b)/b)*100)
 
 def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
-        potential="hydrogen", report=False):
+        potential="hydrogen", report=False, report_filename="report.h5",
+        force=False, sim_name="sim"):
     """
     One particle Schroedinger equation solver.
 
@@ -129,9 +130,20 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             cpu_solve = Float32Col()
             cpu_solve_reference = Float32Col()
             eig_errors = Float64Col(shape=(n_eigs,))
-        h5file = openFile("report.h5", mode = "w", title = "Simulation data")
-        group = h5file.createGroup("/", 'schroed', 'Schroedinger solver')
-        table = h5file.createTable(group, 'sim', Iteration, "Simulation")
+        h5file = openFile(report_filename, mode = "a",
+                title = "Simulation data")
+        if hasattr(h5file.root, "schroed"):
+            group = h5file.root.schroed
+        else:
+            group = h5file.createGroup("/", 'schroed', 'Schroedinger solver')
+        if hasattr(group, sim_name):
+            if force:
+                getattr(group, sim_name).remove()
+            else:
+                print "The table '%s' already exists. Use -f to overwrite it." \
+                        % sim_name
+                return
+        table = h5file.createTable(group, sim_name, Iteration, "Simulation")
         iteration = table.row
 
     mesh = Mesh()
@@ -460,6 +472,12 @@ def main():
     parser.add_option("--report",
                        action="store_true", dest="report",
                        default=False, help="create a report")
+    parser.add_option("-f", "--force",
+                       action="store_true", dest="force",
+                       default=False, help="force doing the action")
+    parser.add_option("--sim-name",
+                       action="store", type="str", dest="sim_name",
+                       default="sim", help="the name of the simulation [default %default]")
     options, args = parser.parse_args()
     if options.verbose:
         verbose_level = 2
@@ -473,6 +491,8 @@ def main():
             "verbose_level": verbose_level,
             "plot": options.plot,
             "report": options.report,
+            "force": options.force,
+            "sim_name": options.sim_name
             }
     if options.well:
         kwargs.update({"potential": "well"})
