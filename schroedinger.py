@@ -120,13 +120,15 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     pot_type = pot[potential]
     if report:
         from timeit import default_timer as clock
-        from tables import IsDescription, UInt32Col, Float32Col, openFile
+        from tables import IsDescription, UInt32Col, Float32Col, openFile, \
+                Float64Col
         class Iteration(IsDescription):
             n = UInt32Col()
             DOF = UInt32Col()
             DOF_reference = UInt32Col()
             cpu_solve = Float32Col()
             cpu_solve_reference = Float32Col()
+            eig_errors = Float64Col(shape=(n_eigs,))
         h5file = openFile("report.h5", mode = "w", title = "Simulation data")
         group = h5file.createGroup("/", 'schroed', 'Schroedinger solver')
         table = h5file.createTable(group, 'sim', Iteration, "Simulation")
@@ -389,6 +391,8 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             prec = precision
             if verbose_level >= 1:
                 print "eig %d: %g%%  precision goal: %g%%" % (i, error, prec)
+        if report:
+            iteration["eig_errors"] = array(errors)
         if errors[0] > precision:
             eig_converging = 0
         elif errors[3] > precision:
