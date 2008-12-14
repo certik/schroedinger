@@ -122,7 +122,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     if report:
         from timeit import default_timer as clock
         from tables import IsDescription, UInt32Col, Float32Col, openFile, \
-                Float64Col
+                Float64Col, Float64Atom, Col, ObjectAtom
         class Iteration(IsDescription):
             n = UInt32Col()
             DOF = UInt32Col()
@@ -131,23 +131,21 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             cpu_solve_reference = Float32Col()
             eig_errors = Float64Col(shape=(n_eigs,))
             eigenvalues = Float64Col(shape=(n_eigs,))
-            # XXX -- don't know
-            #eigenvectors = Float64Col(shape(n_eigs,))
             eigenvalues_reference = Float64Col(shape=(n_eigs,))
         h5file = openFile(report_filename, mode = "a",
                 title = "Simulation data")
-        if hasattr(h5file.root, "schroed"):
-            group = h5file.root.schroed
-        else:
-            group = h5file.createGroup("/", 'schroed', 'Schroedinger solver')
-        if hasattr(group, sim_name):
+        if hasattr(h5file.root, sim_name):
             if force:
-                getattr(group, sim_name).remove()
+                h5file.removeNode(getattr(h5file.root, sim_name),
+                        recursive=True)
             else:
-                print "The table '%s' already exists. Use -f to overwrite it." \
+                print "The group '%s' already exists. Use -f to overwrite it." \
                         % sim_name
                 return
-        table = h5file.createTable(group, sim_name, Iteration, "Simulation")
+        group = h5file.createGroup("/", sim_name, 'Simulation run')
+        table = h5file.createTable(group, "iterations", Iteration,
+                "Iterations info")
+        h5eigs = h5file.createVLArray(group, 'eigenvectors', ObjectAtom())
         iteration = table.row
 
     mesh = Mesh()
@@ -272,6 +270,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             t = clock() - t
             iteration["cpu_solve"] = t
             iteration["eigenvalues"] = array(eigs)
+            h5eigs.append(sols)
         if verbose_level >= 1:
             print "   \-Done."
             print_eigs(eigs, E_exact)
