@@ -146,6 +146,8 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         table = h5file.createTable(group, "iterations", Iteration,
                 "Iterations info")
         h5eigs = h5file.createVLArray(group, 'eigenvectors', ObjectAtom())
+        h5eigs_ref = h5file.createVLArray(group, 'eigenvectors_reference',
+                ObjectAtom())
         iteration = table.row
 
     mesh = Mesh()
@@ -345,6 +347,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             t = clock() - t
             iteration["cpu_solve_reference"] = t
             iteration["eigenvalues_reference"] = array(eigs)
+            h5eigs_ref.append(sols)
         if verbose_level >= 1:
             print "   \-Done."
             print_eigs(eigs, E_exact)
