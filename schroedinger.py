@@ -272,7 +272,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             t = clock() - t
             iteration["cpu_solve"] = t
             iteration["eigenvalues"] = array(eigs)
-            h5eigs.append(sols)
+            #h5eigs.append(sols)
         if verbose_level >= 1:
             print "   \-Done."
             print_eigs(eigs, E_exact)
@@ -347,7 +347,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             t = clock() - t
             iteration["cpu_solve_reference"] = t
             iteration["eigenvalues_reference"] = array(eigs)
-            h5eigs_ref.append(sols)
+            #h5eigs_ref.append(sols)
         if verbose_level >= 1:
             print "   \-Done."
             print_eigs(eigs, E_exact)
