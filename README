@@ -1,0 +1,13 @@
+Schroedinger solver.
+
+Compilation
+-----------
+
+Adjust the path to the hermes2d directory in site_cfg.py, then:
+
+$ make
+
+Run
+---
+
+$ ./schroedinger.py
