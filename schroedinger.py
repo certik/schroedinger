@@ -10,6 +10,16 @@ for usage and help.
 
 """
 
+try:
+    import site_cfg
+    hermes2d_path = site_cfg.hermes2d_path
+except ImportError:
+    hermes2d_path = None
+
+import sys
+if hermes2d_path:
+    sys.path.append(hermes2d_path+"/python")
+
 from math import pi, sqrt
 from optparse import OptionParser
 
