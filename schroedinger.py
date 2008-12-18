@@ -449,7 +449,14 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         h5file.close()
     return s
 
-def poisson_solver(rho):
+def poisson_solver(rho, prec=0.1):
+    """
+    Solves the Poisson equation \Nabla^2\phi = \rho.
+
+    prec ... the precision of the solution in percents
+
+    Returns the solution.
+    """
     mesh = Mesh()
     mesh.load("square.mesh")
     mesh.refine_element(0)
@@ -477,7 +484,7 @@ def poisson_solver(rho):
     set_forms_poisson(rp)
 
     # assemble the stiffness matrix and solve the system
-    for i in range(3):
+    for i in range(10):
         sln = Solution()
         dp.create_matrix()
         print "poisson: assembly coarse"
@@ -499,6 +506,9 @@ def poisson_solver(rho):
         hp = H1OrthoHP(space)
         error = hp.calc_error(sln, rsln) * 100
         print "iteration: %d, error: %f" % (i, error)
+        if error < prec:
+            print "Error less than %f%%, we are done." % prec
+            break
         hp.adapt(0.3)
         space.assign_dofs()
     return sln
@@ -589,7 +599,8 @@ def main():
         for si in s[1:]:
             e += si**2
         n = poisson_solver(e)
-        plot(n)
+        if options.plot:
+            plot(n)
     elif options.three:
         kwargs.update({"potential": "three-points"})
         schroedinger_solver(**kwargs)
