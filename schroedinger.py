@@ -31,7 +31,7 @@ from hermes2d import (initialize, finalize, Mesh, H1Shapeset, PrecalcShapeset,
         H1Space, DiscreteProblem, Solution, ScalarView, BaseView, MeshView,
         H1OrthoHP, OrderView, MatrixView, set_verbose, set_warn_integration)
 
-from cschroed import set_forms7, set_forms8, set_forms_poisson
+from cschroed import set_forms7, set_forms8, set_forms_poisson, get_vxc
 
 def load_mat(filename):
     print "Loading a matrix '%s' in COO format..." % filename
@@ -108,7 +108,7 @@ def print_eigs(eigs, E_exact=None):
 
 def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         potential="hydrogen", report=False, report_filename="report.h5",
-        force=False, sim_name="sim"):
+        force=False, sim_name="sim", potential2=None):
     """
     One particle Schroedinger equation solver.
 
@@ -118,10 +118,12 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             0 ... quiet
             1 ... only moderate output (default)
             2 ... lot's of output
-    plot ... plot the progress (solutions, refined solutions, errors)
+    plot ........ plot the progress (solutions, refined solutions, errors)
     potential ... the V(x) for which to solve, one of:
-            well, oscillator, hydrogen
-    report ... it will save raw data to a file, useful for creating graphs etc.
+                    well, oscillator, hydrogen
+    potential2 .. other terms that should be added to potential
+    report ...... it will save raw data to a file, useful for creating graphs
+                    etc.
 
     Returns the eigenvalues and eigenvectors.
     """
@@ -211,7 +213,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     dp1.set_num_equations(1)
     dp1.set_spaces(space)
     dp1.set_pss(pss)
-    set_forms8(dp1, pot_type)
+    set_forms8(dp1, pot_type, potential2)
     dp2 = DiscreteProblem()
     # this is induced by set_verbose():
     #dp2.set_quiet(not verbose)
@@ -226,7 +228,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     rp1 = DiscreteProblem()
     rp1.copy(dp1)
     rp1.set_spaces(rspace);
-    set_forms8(rp1, pot_type)
+    set_forms8(rp1, pot_type, potential2)
 
     rp2 = DiscreteProblem()
     rp2.copy(dp2)
@@ -513,6 +515,12 @@ def poisson_solver(rho, prec=0.1):
         space.assign_dofs()
     return sln
 
+def calculate_xc(sln):
+    """
+    Calculates get_vxc(sln/(4*pi)).
+    """
+    return sln
+
 def plot(f):
     s = ScalarView("")
     s.show(f)
@@ -594,13 +602,17 @@ def main():
         schroedinger_solver(**kwargs)
     elif options.dft:
         kwargs.update({"potential": "hydrogen"})
-        s = schroedinger_solver(**kwargs)
-        e = s[0]**2
-        for si in s[1:]:
-            e += si**2
-        n = poisson_solver(e)
-        if options.plot:
-            plot(n)
+        kwargs.update({"potential2": None})
+        for i in range(2):
+            s = schroedinger_solver(**kwargs)
+            n = s[0]**2
+            for si in s[1:]:
+                n += si**2
+            V_H = poisson_solver(n)
+            V_XC = calculate_xc(n)
+            if options.plot:
+                plot(n)
+            kwargs.update({"potential2": V_H+V_XC})
     elif options.three:
         kwargs.update({"potential": "three-points"})
         schroedinger_solver(**kwargs)
