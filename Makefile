@@ -11,6 +11,8 @@ LDFLAGS := -Wfatal-errors -Wl,--rpath=$(HERMES)/lib -L$(HERMES)/lib
 
 all: cschroed.so
 
+cschroed.so: dft.o
+
 %.c: %.pyx
 	$(CYTHON) -I$(HERMES)/python $<
 

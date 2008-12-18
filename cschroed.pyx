@@ -4,7 +4,6 @@ from hermes2d cimport scalar, RealFunction, RefMap, DiscreteProblem, \
         BC_NONE, int_F_u_v, c_sqrt, BC_NATURAL, int_F_v, MeshFunction, \
         c_MeshFunction
 
-
 cdef int bc_type_schroed(int marker):
     if marker == 1 or marker == 3:
         return BC_NATURAL
@@ -89,3 +88,16 @@ def set_forms_poisson(DiscreteProblem dp, MeshFunction rho=None):
         rho_poisson = <c_MeshFunction *>(rho.thisptr)
     dp.thisptr.set_bilinear_form(0, 0, &bilinear_form)
     dp.thisptr.set_linear_form(0, &linear_form);
+
+cdef extern from "dft.h":
+    double vxc(double n, int relat)
+
+def get_vxc(n, relat):
+    """
+    Calculates the xc-potential from the charge density "n".
+
+    relat:
+        0 ... nonrelativistic potential
+        1 ... relativistic potential
+    """
+    return vxc(n, relat)
