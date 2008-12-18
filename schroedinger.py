@@ -447,7 +447,14 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             table.flush()
     if report:
         h5file.close()
+    return s
 
+def poisson_solver(rho):
+    return rho
+
+def plot(f):
+    s = ScalarView("")
+    s.show(f)
 
 
 def main():
@@ -487,6 +494,9 @@ def main():
     parser.add_option("--exit",
                        action="store_true", dest="exit",
                        default=False, help ="exit at the end of calculation (with --plot), i.e. do not leave the plot windows open")
+    parser.add_option("--stay",
+                       action="store_true", dest="stay",
+                       default=False, help ="leave the plots open")
     parser.add_option("--report",
                        action="store_true", dest="report",
                        default=False, help="create a report")
@@ -514,20 +524,29 @@ def main():
             }
     if options.well:
         kwargs.update({"potential": "well"})
+        schroedinger_solver(**kwargs)
     elif options.oscillator:
         kwargs.update({"potential": "oscillator"})
+        schroedinger_solver(**kwargs)
     elif options.hydrogen:
         kwargs.update({"potential": "hydrogen"})
+        schroedinger_solver(**kwargs)
     elif options.dft:
-        raise NotImplementedError()
+        kwargs.update({"potential": "hydrogen"})
+        s = schroedinger_solver(**kwargs)
+        e = s[0]**2
+        for si in s[1:]:
+            e += si**2
+        n = poisson_solver(e)
+        plot(n)
     elif options.three:
         kwargs.update({"potential": "three-points"})
+        schroedinger_solver(**kwargs)
     else:
         parser.print_help()
         return
-    schroedinger_solver(**kwargs)
 
-    if options.plot and not options.exit:
+    if (options.plot and not options.exit) or options.stay:
         # leave the plot windows open, the user needs to close them with
         # "ctrl-C":
         finalize()
