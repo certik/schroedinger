@@ -31,7 +31,7 @@ from hermes2d import (initialize, finalize, Mesh, H1Shapeset, PrecalcShapeset,
         H1Space, DiscreteProblem, Solution, ScalarView, BaseView, MeshView,
         H1OrthoHP, OrderView, MatrixView, set_verbose, set_warn_integration)
 
-from cschroed import set_forms7, set_forms8
+from cschroed import set_forms7, set_forms8, set_forms_poisson
 
 def load_mat(filename):
     print "Loading a matrix '%s' in COO format..." % filename
@@ -450,7 +450,30 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     return s
 
 def poisson_solver(rho):
-    return rho
+    mesh = Mesh()
+    mesh.load("square.mesh")
+    mesh.refine_element(0)
+    shapeset = H1Shapeset()
+    pss = PrecalcShapeset(shapeset)
+
+    # create an H1 space
+    space = H1Space(mesh, shapeset)
+    space.set_uniform_order(5)
+    space.assign_dofs()
+
+    # initialize the discrete problem
+    dp = DiscreteProblem()
+    dp.set_num_equations(1)
+    dp.set_spaces(space)
+    dp.set_pss(pss)
+    set_forms_poisson(dp)
+
+    # assemble the stiffness matrix and solve the system
+    sln = Solution()
+    dp.create_matrix()
+    dp.assemble_matrix_and_rhs()
+    dp.solve_system(sln)
+    return sln
 
 def plot(f):
     s = ScalarView("")
