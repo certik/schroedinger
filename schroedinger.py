@@ -603,15 +603,17 @@ def main():
     elif options.dft:
         kwargs.update({"potential": "hydrogen"})
         kwargs.update({"potential2": None})
-        for i in range(2):
+        for i in range(6):
             s = schroedinger_solver(**kwargs)
             n = s[0]**2
             for si in s[1:]:
                 n += si**2
-            V_H = poisson_solver(n)
-            V_XC = calculate_xc(n)
             if options.plot:
                 plot(n)
+            V_H = poisson_solver(n)
+            if options.plot:
+                plot(V_H)
+            V_XC = calculate_xc(n)
             kwargs.update({"potential2": V_H+V_XC})
     elif options.three:
         kwargs.update({"potential": "three-points"})
