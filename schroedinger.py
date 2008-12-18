@@ -27,10 +27,9 @@ from numpy import zeros, array
 from scipy.sparse import coo_matrix
 from pysparse import spmatrix, jdsym, precon, itsolvers
 
-from hermes2d import initialize, finalize, Mesh, H1Shapeset, \
-        PrecalcShapeset, H1Space, DiscreteProblem, Solution, ScalarView, \
-        BaseView, MeshView, H1OrthoHP, OrderView, \
-        MatrixView, set_verbose
+from hermes2d import (initialize, finalize, Mesh, H1Shapeset, PrecalcShapeset,
+        H1Space, DiscreteProblem, Solution, ScalarView, BaseView, MeshView,
+        H1OrthoHP, OrderView, MatrixView, set_verbose, set_warn_integration)
 
 from cschroed import set_forms7, set_forms8
 
@@ -127,6 +126,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     Returns the eigenvalues and eigenvectors.
     """
     set_verbose(verbose_level == 2)
+    set_warn_integration(False)
     pot = {"well": 0, "oscillator": 1, "hydrogen": 2, "three-points": 3}
     pot_type = pot[potential]
     if report:
