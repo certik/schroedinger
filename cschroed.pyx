@@ -80,11 +80,12 @@ cdef scalar linear_form(RealFunction *fv, RefMap *rv):
     return int_F_v(&F_poisson, fv, rv)
 
 
-def set_forms_poisson(DiscreteProblem dp, MeshFunction rho):
+def set_forms_poisson(DiscreteProblem dp, MeshFunction rho=None):
     """
     rho ... the right hand side of the Poisson equation
     """
     global rho_poisson
-    rho_poisson = <c_MeshFunction *>(rho.thisptr)
+    if rho is not None:
+        rho_poisson = <c_MeshFunction *>(rho.thisptr)
     dp.thisptr.set_bilinear_form(0, 0, &bilinear_form)
     dp.thisptr.set_linear_form(0, &linear_form);

@@ -468,11 +468,39 @@ def poisson_solver(rho):
     dp.set_pss(pss)
     set_forms_poisson(dp, rho)
 
+    rmesh = Mesh()
+    rspace = H1Space(rmesh, shapeset)
+
+    rp = DiscreteProblem()
+    rp.copy(dp)
+    rp.set_spaces(rspace);
+    set_forms_poisson(rp)
+
     # assemble the stiffness matrix and solve the system
-    sln = Solution()
-    dp.create_matrix()
-    dp.assemble_matrix_and_rhs()
-    dp.solve_system(sln)
+    for i in range(3):
+        sln = Solution()
+        dp.create_matrix()
+        print "poisson: assembly coarse"
+        dp.assemble_matrix_and_rhs()
+        print "poisson: done"
+        dp.solve_system(sln)
+
+        rmesh.copy(mesh)
+        rmesh.refine_all_elements()
+        rspace.copy_orders(space, 1)
+        rspace.assign_dofs()
+        rsln = Solution()
+        rp.create_matrix()
+        print "poisson: assembly reference"
+        rp.assemble_matrix_and_rhs()
+        print "poisson: done"
+        rp.solve_system(rsln)
+
+        hp = H1OrthoHP(space)
+        error = hp.calc_error(sln, rsln) * 100
+        print "iteration: %d, error: %f" % (i, error)
+        hp.adapt(0.3)
+        space.assign_dofs()
     return sln
 
 def plot(f):
