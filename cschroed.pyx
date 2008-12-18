@@ -1,7 +1,7 @@
 from hermes2d cimport scalar, RealFunction, RefMap, DiscreteProblem, \
         int_grad_u_grad_v, int_v, H1Space, Solution, int_u_dvdx, \
         int_u_dvdy, int_w_nabla_u_v, int_u_v, BF_ANTISYM, BC_ESSENTIAL, \
-        BC_NONE, int_F_u_v, c_sqrt, BC_NATURAL
+        BC_NONE, int_F_u_v, c_sqrt, BC_NATURAL, int_F_v, MeshFunction
 
 
 cdef int bc_type_schroed(int marker):
@@ -68,9 +68,22 @@ cdef scalar bilinear_form(RealFunction *fu, RealFunction *fv,
         RefMap *ru, RefMap *rv):
     return int_grad_u_grad_v(fu, fv, ru, rv)
 
-cdef scalar linear_form(RealFunction *fv, RefMap *rv):
-    return 2*int_v(fv, rv)
+cdef MeshFunction rho_poisson
 
-def set_forms_poisson(DiscreteProblem dp):
+cdef double F_poisson(double x, double y):
+    # XXX --- here we should probably return something like 4*pi*value, let's
+    # check it
+    return rho_poisson.get_pt_value(x, y)
+
+cdef scalar linear_form(RealFunction *fv, RefMap *rv):
+    return int_F_v(&F_poisson, fv, rv)
+
+
+def set_forms_poisson(DiscreteProblem dp, MeshFunction rho):
+    """
+    rho ... the right hand side of the Poisson equation
+    """
+    global rho_poisson
+    rho_poisson = rho
     dp.thisptr.set_bilinear_form(0, 0, &bilinear_form)
     dp.thisptr.set_linear_form(0, &linear_form);

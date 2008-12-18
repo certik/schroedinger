@@ -466,7 +466,7 @@ def poisson_solver(rho):
     dp.set_num_equations(1)
     dp.set_spaces(space)
     dp.set_pss(pss)
-    set_forms_poisson(dp)
+    set_forms_poisson(dp, rho)
 
     # assemble the stiffness matrix and solve the system
     sln = Solution()
