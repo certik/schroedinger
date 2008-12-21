@@ -2,7 +2,7 @@ from hermes2d cimport scalar, RealFunction, RefMap, DiscreteProblem, \
         int_grad_u_grad_v, int_v, H1Space, Solution, int_u_dvdx, \
         int_u_dvdy, int_w_nabla_u_v, int_u_v, BF_ANTISYM, BC_ESSENTIAL, \
         BC_NONE, int_F_u_v, c_sqrt, BC_NATURAL, int_F_v, MeshFunction, \
-        c_MeshFunction
+        c_MeshFunction, c_ScalarFunction
 
 cdef int bc_type_schroed(int marker):
     if marker == 1 or marker == 3:
@@ -98,7 +98,11 @@ cdef double F_poisson(double x, double y):
     return rho_poisson.get_pt_value(x, y)
 
 cdef scalar linear_form(RealFunction *fv, RefMap *rv):
-    return int_F_v(&F_poisson, fv, rv)
+    cdef c_ScalarFunction *fu=<c_ScalarFunction *>rho_poisson
+    #cdef RefMap *ru = rho_poisson.get_refmap()
+    cdef RefMap *ru = rv
+    #return int_F_v(&F_poisson, fv, rv)
+    return int_u_v(<RealFunction*>fu, fv, ru, rv)
 
 
 def set_forms_poisson(DiscreteProblem dp, MeshFunction rho=None):
