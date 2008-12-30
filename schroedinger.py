@@ -27,9 +27,10 @@ from numpy import zeros, array
 from scipy.sparse import coo_matrix
 from pysparse import spmatrix, jdsym, precon, itsolvers
 
-from hermes2d import (initialize, finalize, Mesh, H1Shapeset, PrecalcShapeset,
-        H1Space, DiscreteProblem, Solution, ScalarView, BaseView, MeshView,
-        H1OrthoHP, OrderView, MatrixView, set_verbose, set_warn_integration)
+from hermes2d import (initialize, glut_main_loop, Mesh, H1Shapeset,
+        PrecalcShapeset, H1Space, DiscreteProblem, Solution, ScalarView,
+        BaseView, MeshView, H1OrthoHP, OrderView, MatrixView, set_verbose,
+        set_warn_integration)
 
 from cschroed import set_forms7, set_forms8, set_forms_poisson, get_vxc
 
@@ -625,7 +626,7 @@ def main():
     if (options.plot and not options.exit) or options.stay:
         # leave the plot windows open, the user needs to close them with
         # "ctrl-C":
-        finalize()
+        glut_main_loop()
 
 if __name__ == '__main__':
     main()
