@@ -418,14 +418,14 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             print "calc error (iter=%d):" % it
         eig_converging = 0
         errors = []
-        #for i in range(min(len(s), len(rs))):
-        #    error = hp.calc_error(s[i], rs[i]) * 100
-        #    errors.append(error)
+        for i in range(min(len(s), len(rs))):
+            error = hp.calc_error(s[i], rs[i]) * 100
+            errors.append(error)
         #    prec = precision
         #    if verbose_level >= 1:
         #        print "eig %d: %g%%  precision goal: %g%%" % (i, error, prec)
-        #if report:
-        #    iteration["eig_errors"] = array(errors)
+        if report:
+            iteration["eig_errors"] = array(errors)
         #if errors[0] > precision:
         #    eig_converging = 0
         #elif errors[3] > precision:
