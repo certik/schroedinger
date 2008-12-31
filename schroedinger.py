@@ -412,7 +412,8 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
 
         if verbose_level >= 1:
             print "Calculating errors."
-        hp = H1OrthoHP(space, space, space, space)
+        #hp = H1OrthoHP(space, space, space, space)
+        hp = H1OrthoHP(space)
         if verbose_level == 2:
             print "-"*60
             print "calc error (iter=%d):" % it
@@ -426,22 +427,22 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         #        print "eig %d: %g%%  precision goal: %g%%" % (i, error, prec)
         if report:
             iteration["eig_errors"] = array(errors)
-        #if errors[0] > precision:
-        #    eig_converging = 0
-        #elif errors[3] > precision:
-        #    eig_converging = 3
-        #elif errors[1] > precision:
-        #    eig_converging = 1
-        #elif errors[2] > precision:
-        #    eig_converging = 2
-        #else:
-        #    precision /= 2
+        if errors[0] > precision:
+            eig_converging = 0
+        elif errors[3] > precision:
+            eig_converging = 3
+        elif errors[1] > precision:
+            eig_converging = 1
+        elif errors[2] > precision:
+            eig_converging = 2
+        else:
+            precision /= 2
         # uncomment the following line to only converge to some eigenvalue:
         #eig_converging = 3
-        #if verbose_level >= 1:
-        #    print "picked: %d" % eig_converging
-        #error = hp.calc_error(s[eig_converging], rs[eig_converging]) * 100
-        error = hp.calc_error_4(s, rs) * 100
+        if verbose_level >= 1:
+            print "picked: %d" % eig_converging
+        error = hp.calc_error(s[eig_converging], rs[eig_converging]) * 100
+        #error = hp.calc_error_4(s, rs) * 100
         if verbose_level >= 1:
             print "Adapting the mesh."
         hp.adapt(0.3)
