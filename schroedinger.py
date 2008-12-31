@@ -446,7 +446,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         if verbose_level >= 1:
             print "Total error:", error
             print "Adapting the mesh."
-        hp.adapt(1.8)
+        hp.adapt(3.8)
         space.assign_dofs()
         if report:
             iteration.append()
