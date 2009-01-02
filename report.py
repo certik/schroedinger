@@ -3,10 +3,15 @@ print "loading"
 
 from tables import openFile
 from pylab import plot, show, legend, grid, xlabel, ylabel, yscale
+import sys
 
 print "plotting"
+if len(sys.argv) == 2:
+    sim_name = sys.argv[1]
+else:
+    sim_name = "sim"
 h5file = openFile("report.h5")
-table = h5file.root.sim.iterations
+table = getattr(h5file.root, sim_name).iterations
 x = table.col("DOF")
 errs = table.col("eig_errors")
 for i in range(4):
