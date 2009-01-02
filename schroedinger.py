@@ -29,8 +29,8 @@ from pysparse import spmatrix, jdsym, precon, itsolvers
 
 from hermes2d import (initialize, glut_main_loop, Mesh, H1Shapeset,
         PrecalcShapeset, H1Space, DiscreteProblem, Solution, ScalarView,
-        BaseView, MeshView, H1OrthoHP, OrderView, MatrixView, set_verbose,
-        set_warn_integration)
+        BaseView, MeshView, H1OrthoHP, L2OrthoHP, OrderView, MatrixView,
+        set_verbose, set_warn_integration)
 
 from cschroed import set_forms7, set_forms8, set_forms_poisson, get_vxc
 
@@ -421,6 +421,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         errors = []
         for i in range(min(len(s), len(rs))):
             error = hp.calc_error(s[i], rs[i]) * 100
+            #print error, d1(s[i], rs[i])*100, sqrt(((s[i]-rs[i])**2).int())
             errors.append(error)
         #    prec = precision
         #    if verbose_level >= 1:
