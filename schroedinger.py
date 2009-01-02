@@ -109,7 +109,7 @@ def print_eigs(eigs, E_exact=None):
 
 def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         potential="hydrogen", report=False, report_filename="report.h5",
-        force=False, sim_name="sim", potential2=None):
+        force=False, sim_name="sim", potential2=None, adapt_single=False):
     """
     One particle Schroedinger equation solver.
 
@@ -123,6 +123,9 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     potential ... the V(x) for which to solve, one of:
                     well, oscillator, hydrogen
     potential2 .. other terms that should be added to potential
+    adapt_single ... True: only adapt to a single eigenvector (with the largest
+                error) per iteration, False: adapt the elements with largest
+                errors over *all* eigenvectors (recommended)
     report ...... it will save raw data to a file, useful for creating graphs
                     etc.
 
@@ -412,8 +415,10 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
 
         if verbose_level >= 1:
             print "Calculating errors."
-        hp = H1OrthoHP(space, space, space, space)
-        #hp = H1OrthoHP(space)
+        if adapt_single:
+            hp = H1OrthoHP(space)
+        else:
+            hp = H1OrthoHP(space, space, space, space)
         if verbose_level == 2:
             print "-"*60
             print "calc error (iter=%d):" % it
@@ -428,26 +433,31 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         #        print "eig %d: %g%%  precision goal: %g%%" % (i, error, prec)
         if report:
             iteration["eig_errors"] = array(errors)
-        if errors[0] > precision:
-            eig_converging = 0
-        elif errors[3] > precision:
-            eig_converging = 3
-        elif errors[1] > precision:
-            eig_converging = 1
-        elif errors[2] > precision:
-            eig_converging = 2
+        if adapt_single:
+            if errors[0] > precision:
+                eig_converging = 0
+            elif errors[3] > precision:
+                eig_converging = 3
+            elif errors[1] > precision:
+                eig_converging = 1
+            elif errors[2] > precision:
+                eig_converging = 2
+            else:
+                precision /= 2
+            # uncomment the following line to only converge to some eigenvalue:
+            #eig_converging = 3
+            if verbose_level >= 1:
+                print "picked: %d" % eig_converging
+            error = hp.calc_error(s[eig_converging], rs[eig_converging]) * 100
         else:
-            precision /= 2
-        # uncomment the following line to only converge to some eigenvalue:
-        #eig_converging = 3
-        if verbose_level >= 1:
-            print "picked: %d" % eig_converging
-        #error = hp.calc_error(s[eig_converging], rs[eig_converging]) * 100
-        error = hp.calc_error_4(s, rs) * 100
+            error = hp.calc_error_4(s, rs) * 100
         if verbose_level >= 1:
             print "Total error:", error
             print "Adapting the mesh."
-        hp.adapt(3.8)
+        if adapt_single:
+            hp.adapt(0.3)
+        else:
+            hp.adapt(3.8)
         space.assign_dofs()
         if report:
             iteration.append()
@@ -574,6 +584,9 @@ def main():
     parser.add_option("--report",
                        action="store_true", dest="report",
                        default=False, help="create a report")
+    parser.add_option("--adapt-single",
+                       action="store_true", dest="adapt_single",
+                       default=False, help="only adapt to a single eigenvector per iteration [default %default]")
     parser.add_option("-f", "--force",
                        action="store_true", dest="force",
                        default=False, help="force doing the action")
@@ -594,7 +607,8 @@ def main():
             "plot": options.plot,
             "report": options.report,
             "force": options.force,
-            "sim_name": options.sim_name
+            "sim_name": options.sim_name,
+            "adapt_single": options.adapt_single,
             }
     if options.well:
         kwargs.update({"potential": "well"})
