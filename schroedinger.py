@@ -261,9 +261,11 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     ord2 = OrderView("Polynomial Orders-ref", 2*w, 3*h, w, h)
     view_s = ScalarView("sum of solutions", 3*w, 3*h, w, h)
     view_rs = ScalarView("sum of ref. solutions", 4*w, 3*h, w, h)
+    view_err = ScalarView("sum of ref. solutions", 5*w, 3*h, w, h)
     view_s.show_scale(False)
-    view_rs.set_min_max_range(0, 10**-4)
     view_rs.show_scale(False)
+    view_err.show_scale(False)
+    view_err.set_min_max_range(0, 10**-4)
     mat1 = MatrixView("Matrix A", 0, 3*h, w, h)
     #mat2 = MatrixView("Matrix A'", 2*w, 2*h, w, h)
 
@@ -446,13 +448,16 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         s_sum.set_fe_solution(space, pss, a)
         rs_sum = Solution()
         rs_sum.set_fe_solution(rspace, pss, b)
-        view_s.show(s_sum)
-        view_rs.show(rs_sum)
+        if plot:
+            view_s.show(s_sum)
+            view_rs.show(rs_sum)
+            view_err.show((s_sum - rs_sum)**2)
 
         if adapt_single:
             hp = H1OrthoHP(space)
         else:
             hp = H1OrthoHP(space, space, space, space, space, space)
+            hp = H1OrthoHP(space)
         if verbose_level == 2:
             print "-"*60
             print "calc error (iter=%d):" % it
@@ -485,7 +490,8 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             error = hp.calc_error(s[eig_converging], rs[eig_converging]) * 100
             stop
         else:
-            error = hp.calc_error_6(s, rs) * 100
+            #error = hp.calc_error_6(s, rs) * 100
+            error = hp.calc_error(s_sum, rs_sum) * 100
         if verbose_level >= 1:
             print "Total error:", error
             print "Adapting the mesh."
@@ -495,7 +501,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             hp.adapt(0.3, h_only)
             stop
         else:
-            hp.adapt(0.1, h_only)
+            hp.adapt(0.3, h_only)
         space.assign_dofs()
         if report:
             iteration.append()
