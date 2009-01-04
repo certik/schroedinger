@@ -35,7 +35,7 @@ cdef double F(double x, double y):
             V = 0
         return (x**2+y**2)/2+0.00001*x + V
     elif potential_type == 2:
-        return -0.5/c_sqrt(x**2+y**2)+0.00001*x
+        return -0.5/c_sqrt(x**2+y**2)#+0.00001*x
     else: # 3
         return -0.5/c_sqrt(x**2+(y-10)**2)-0.5/c_sqrt((x-10)**2+y**2)-0.5/c_sqrt((x+10)**2+y**2)
 
