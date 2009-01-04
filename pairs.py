@@ -29,6 +29,8 @@ def make_pairs_robust(s, rs, d1, d2):
     """
     Calculates all possible norms and chooses always the best.
     """
+    if len(s) != len(rs):
+        raise Exception("The length of both 's' and 'rs' must be the same.")
     rs_orig = rs[:]
     r = []
     flips = []
