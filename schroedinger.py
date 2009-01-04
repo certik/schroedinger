@@ -109,7 +109,8 @@ def print_eigs(eigs, E_exact=None):
 
 def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         potential="hydrogen", report=False, report_filename="report.h5",
-        force=False, sim_name="sim", potential2=None, adapt_single=False):
+        force=False, sim_name="sim", potential2=None, adapt_single=False,
+        nrefine=1):
     """
     One particle Schroedinger equation solver.
 
@@ -126,6 +127,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     adapt_single ... True: only adapt to a single eigenvector (with the largest
                 error) per iteration, False: adapt the elements with largest
                 errors over *all* eigenvectors (recommended)
+    nrefine ... the number of uniform refinements at the beginning
     report ...... it will save raw data to a file, useful for creating graphs
                     etc.
 
@@ -193,11 +195,8 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         print n_eigs
         print E_exact
         raise Exception("We don't have enough analytical eigenvalues.")
-    #mesh.refine_element(0)
-    mesh.refine_all_elements()
-    #mesh.refine_all_elements()
-    #mesh.refine_all_elements()
-    #mesh.refine_all_elements()
+    for i in range(nrefine):
+        mesh.refine_all_elements()
 
     #mview = MeshView()
     #mview.show(mesh)
@@ -569,6 +568,9 @@ def main():
     parser.add_option("--iter",
                        action="store", type="int", dest="iter",
                        default=5, help="the number of iterations to calculate [default %default]")
+    parser.add_option("--nrefine",
+                       action="store", type="int", dest="nrefine",
+                       default=1, help="the number of initial uniform mesh refinements [default %default]")
     parser.add_option("--neigs",
                        action="store", type="int", dest="neigs",
                        default=4, help="the number of eigenvectors to calculate [default %default]")
@@ -609,6 +611,7 @@ def main():
             "force": options.force,
             "sim_name": options.sim_name,
             "adapt_single": options.adapt_single,
+            "nrefine": options.nrefine,
             }
     if options.well:
         kwargs.update({"potential": "well"})
