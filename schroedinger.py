@@ -245,8 +245,13 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     views = [ScalarView("", i*w, 0, w, h) for i in range(n_eigs)]
     viewsm = [ScalarView("", i*w, h, w, h) for i in range(n_eigs)]
     viewse = [ScalarView("", i*w, 2*h, w, h) for i in range(n_eigs)]
+    for v in views:
+        v.show_scale(False)
+    for v in viewsm:
+        v.show_scale(False)
     for v in viewse:
         v.set_min_max_range(0, 10**-4)
+        v.show_scale(False)
     ord = OrderView("Polynomial Orders", w, 3*h, w, h)
     ord2 = OrderView("Polynomial Orders-ref", 2*w, 3*h, w, h)
     mat1 = MatrixView("Matrix A", 0, 3*h, w, h)
