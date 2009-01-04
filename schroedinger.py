@@ -203,7 +203,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
 
     shapeset = H1Shapeset()
     space = H1Space(mesh, shapeset)
-    space.set_uniform_order(2)
+    space.set_uniform_order(1)
     space.assign_dofs()
 
     pss = PrecalcShapeset(shapeset)
@@ -238,15 +238,18 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     rp2.set_spaces(rspace);
     set_forms7(rp2)
 
-    w = 320
-    h = 320
-    views = [ScalarView("", i*w, 0, w, h) for i in range(4)]
-    viewsm = [ScalarView("", i*w, h, w, h) for i in range(4)]
-    viewse = [ScalarView("", i*w, 2*h, w, h) for i in range(4)]
+    screen_width = 1280
+    screen_height = 800
+    w = screen_width/n_eigs
+    h = screen_height/4
+    views = [ScalarView("", i*w, 0, w, h) for i in range(n_eigs)]
+    viewsm = [ScalarView("", i*w, h, w, h) for i in range(n_eigs)]
+    viewse = [ScalarView("", i*w, 2*h, w, h) for i in range(n_eigs)]
     for v in viewse:
         v.set_min_max_range(0, 10**-4)
-    ord = OrderView("Polynomial Orders", 0, 2*h, w, h)
-    mat1 = MatrixView("Matrix A", w, 2*h, w, h)
+    ord = OrderView("Polynomial Orders", w, 3*h, w, h)
+    ord2 = OrderView("Polynomial Orders-ref", 2*w, 3*h, w, h)
+    mat1 = MatrixView("Matrix A", 0, 3*h, w, h)
     #mat2 = MatrixView("Matrix A'", 2*w, 2*h, w, h)
 
     rs = None
@@ -327,10 +330,10 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             if verbose_level >= 1:
                 print "plotting: solution"
             ord.show(space)
-            for i in range(min(len(s), 4)):
+            for i in range(min(len(s), n_eigs)):
                 views[i].show(s[i])
                 views[i].set_title("Iter: %d, eig: %d" % (it, i))
-            #mat1.show(dp1)
+            mat1.show(dp1)
 
         if verbose_level >= 1:
             print "reference: initializing mesh."
@@ -403,13 +406,14 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         if plot:
             if verbose_level >= 1:
                 print "plotting: solution, reference solution, errors"
-            for i in range(min(len(s), len(rs), 4)):
+            for i in range(min(len(s), len(rs), n_eigs)):
                 #views[i].show(s[i])
                 #views[i].set_title("Iter: %d, eig: %d" % (it, i))
                 viewsm[i].show(rs[i])
                 viewsm[i].set_title("Ref. Iter: %d, eig: %d" % (it, i))
                 viewse[i].show((s[i]-rs[i])**2)
                 viewse[i].set_title("Error plot Iter: %d, eig: %d" % (it, i))
+            ord2.show(rspace)
 
 
         if verbose_level >= 1:
@@ -444,7 +448,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             else:
                 precision /= 2
             # uncomment the following line to only converge to some eigenvalue:
-            eig_converging = 0
+            eig_converging = 3
             if verbose_level >= 1:
                 print "picked: %d" % eig_converging
             error = hp.calc_error(s[eig_converging], rs[eig_converging]) * 100
