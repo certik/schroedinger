@@ -15,9 +15,15 @@ h5file = openFile("report.h5")
 table = getattr(h5file.root, sim_name).iterations
 x = table.col("DOF")
 y = table.col("total_error")
-plot(x, y, linewidth=2, label="total error")
-plot(x, y, "kD")
-
+plot(x, y, "b-", linewidth=2, label="h-FEM total error")
+plot(x, y, "bD")
+h5file.close()
+h5file = openFile("report-august-hp.h5")
+table = getattr(h5file.root, sim_name).iterations
+x = table.col("DOF")
+y = table.col("total_error")
+plot(x, y, "g-", linewidth=2, label="hp-FEM total error")
+#plot(x, y, "gD")
 h5file.close()
 
 xlabel("DOF")

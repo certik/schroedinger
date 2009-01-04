@@ -30,7 +30,7 @@ from pysparse import spmatrix, jdsym, precon, itsolvers
 from hermes2d import (initialize, glut_main_loop, Mesh, H1Shapeset,
         PrecalcShapeset, H1Space, DiscreteProblem, Solution, ScalarView,
         BaseView, MeshView, H1OrthoHP, L2OrthoHP, OrderView, MatrixView,
-        set_verbose, set_warn_integration)
+        set_verbose, set_warn_integration, l2_error)
 
 from cschroed import set_forms7, set_forms8, set_forms_poisson, get_vxc
 
@@ -259,6 +259,11 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         v.show_scale(False)
     ord = OrderView("Polynomial Orders", w, 3*h, w, h)
     ord2 = OrderView("Polynomial Orders-ref", 2*w, 3*h, w, h)
+    view_s = ScalarView("sum of solutions", 3*w, 3*h, w, h)
+    view_rs = ScalarView("sum of ref. solutions", 4*w, 3*h, w, h)
+    view_s.show_scale(False)
+    view_rs.set_min_max_range(0, 10**-4)
+    view_rs.show_scale(False)
     mat1 = MatrixView("Matrix A", 0, 3*h, w, h)
     #mat2 = MatrixView("Matrix A'", 2*w, 2*h, w, h)
 
@@ -402,6 +407,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
 
         def d1(x, y):
             return (x-y).l2_norm()
+            #return l2_error(x, y)
         def d2(x, y):
             return (x+y).l2_norm()
         from pairs import make_pairs
@@ -429,6 +435,20 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
 
         if verbose_level >= 1:
             print "Calculating errors."
+
+        a = s[0].get_fe_solution()
+        for i in range(1, 6):
+            a += s[i].get_fe_solution()
+        b = rs[0].get_fe_solution()
+        for i in range(1, 6):
+            b += rs[i].get_fe_solution()
+        s_sum = Solution()
+        s_sum.set_fe_solution(space, pss, a)
+        rs_sum = Solution()
+        rs_sum.set_fe_solution(rspace, pss, b)
+        view_s.show(s_sum)
+        view_rs.show(rs_sum)
+
         if adapt_single:
             hp = H1OrthoHP(space)
         else:
@@ -470,7 +490,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             print "Total error:", error
             print "Adapting the mesh."
         if report:
-            iteration["total_error"] = array(error)
+            iteration["total_error"] = error
         if adapt_single:
             hp.adapt(0.3, h_only)
             stop
