@@ -78,7 +78,7 @@ def solve(A, B, n_eigs=4, verbose=False):
     if verbose:
         print "solving (%d x %d)" % (n, n)
     Atau = A.copy()
-    tau = -1
+    tau = -2
     Atau.shift(-tau, B)
     K = precon.jacobi(Atau)
     A = A.to_sss()
@@ -148,6 +148,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             cpu_solve = Float32Col()
             cpu_solve_reference = Float32Col()
             eig_errors = Float64Col(shape=(n_eigs,))
+            total_error = Float64Col()
             eigenvalues = Float64Col(shape=(n_eigs,))
             eigenvalues_reference = Float64Col(shape=(n_eigs,))
         h5file = openFile(report_filename, mode = "a",
@@ -238,12 +239,12 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     rp2.set_spaces(rspace);
     set_forms7(rp2)
 
-    #screen_width = 1280
-    #screen_height = 800
+    screen_width = 1280
+    screen_height = 800
     #screen_width = 1680
     #screen_height = 1050
-    screen_width = 1024
-    screen_height = 768
+    #screen_width = 1024
+    #screen_height = 768
     w = screen_width/n_eigs
     h = screen_height/4
     views = [ScalarView("", i*w, 0, w, h) for i in range(n_eigs)]
@@ -436,16 +437,16 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             print "-"*60
             print "calc error (iter=%d):" % it
         eig_converging = 0
-        errors = []
-        for i in range(min(len(s), len(rs))):
-            error = hp.calc_error(s[i], rs[i]) * 100
-            #print error, d1(s[i], rs[i])*100, sqrt(((s[i]-rs[i])**2).int())
-            errors.append(error)
+        #errors = []
+        #for i in range(min(len(s), len(rs))):
+        #    error = hp.calc_error(s[i], rs[i]) * 100
+        #    #print error, d1(s[i], rs[i])*100, sqrt(((s[i]-rs[i])**2).int())
+        #    errors.append(error)
         #    prec = precision
         #    if verbose_level >= 1:
         #        print "eig %d: %g%%  precision goal: %g%%" % (i, error, prec)
-        if report:
-            iteration["eig_errors"] = array(errors)
+        #if report:
+        #    iteration["eig_errors"] = array(errors)
         if adapt_single:
             if errors[0] > precision:
                 eig_converging = 0
@@ -462,15 +463,19 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             if verbose_level >= 1:
                 print "picked: %d" % eig_converging
             error = hp.calc_error(s[eig_converging], rs[eig_converging]) * 100
+            stop
         else:
             error = hp.calc_error_6(s, rs) * 100
         if verbose_level >= 1:
             print "Total error:", error
             print "Adapting the mesh."
+        if report:
+            iteration["total_error"] = array(error)
         if adapt_single:
             hp.adapt(0.3, h_only)
+            stop
         else:
-            hp.adapt(3.8)
+            hp.adapt(0.1, h_only)
         space.assign_dofs()
         if report:
             iteration.append()
