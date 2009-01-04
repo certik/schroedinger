@@ -310,16 +310,17 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
 
         if verbose_level >= 1:
             print "Matching solutions."
-        if rs is not None:
+        #if rs is not None:
+        if 0:
             def minus2(sols, i):
                 sln = Solution()
                 vec = sols[:, i]
                 sln.set_fe_solution(space, pss, -vec)
                 return sln
             pairs, flips = make_pairs(rs, s, d1, d2)
-            #print "_"*40
-            #print pairs, flips
-            #print len(rs), len(s)
+            print "_"*40
+            print pairs, flips
+            print len(rs), len(s)
             #from time import sleep
             #sleep(3)
             #stop
