@@ -238,8 +238,12 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     rp2.set_spaces(rspace);
     set_forms7(rp2)
 
-    screen_width = 1280
-    screen_height = 800
+    #screen_width = 1280
+    #screen_height = 800
+    #screen_width = 1680
+    #screen_height = 1050
+    screen_width = 1024
+    screen_height = 768
     w = screen_width/n_eigs
     h = screen_height/4
     views = [ScalarView("", i*w, 0, w, h) for i in range(n_eigs)]
@@ -427,7 +431,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         if adapt_single:
             hp = H1OrthoHP(space)
         else:
-            hp = H1OrthoHP(space, space, space, space)
+            hp = H1OrthoHP(space, space, space, space, space, space)
         if verbose_level == 2:
             print "-"*60
             print "calc error (iter=%d):" % it
@@ -459,7 +463,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
                 print "picked: %d" % eig_converging
             error = hp.calc_error(s[eig_converging], rs[eig_converging]) * 100
         else:
-            error = hp.calc_error_4(s, rs) * 100
+            error = hp.calc_error_6(s, rs) * 100
         if verbose_level >= 1:
             print "Total error:", error
             print "Adapting the mesh."
