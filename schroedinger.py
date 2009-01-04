@@ -110,7 +110,7 @@ def print_eigs(eigs, E_exact=None):
 def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
         potential="hydrogen", report=False, report_filename="report.h5",
         force=False, sim_name="sim", potential2=None, adapt_single=False,
-        nrefine=1):
+        nrefine=1, h_only=False):
     """
     One particle Schroedinger equation solver.
 
@@ -454,7 +454,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             print "Total error:", error
             print "Adapting the mesh."
         if adapt_single:
-            hp.adapt(0.3)
+            hp.adapt(0.3, h_only)
         else:
             hp.adapt(3.8)
         space.assign_dofs()
@@ -592,6 +592,9 @@ def main():
     parser.add_option("-f", "--force",
                        action="store_true", dest="force",
                        default=False, help="force doing the action")
+    parser.add_option("--h-only",
+                       action="store_true", dest="h_only",
+                       default=False, help="only use h-adaptation")
     parser.add_option("--sim-name",
                        action="store", type="str", dest="sim_name",
                        default="sim", help="the name of the simulation [default %default]")
@@ -612,6 +615,7 @@ def main():
             "sim_name": options.sim_name,
             "adapt_single": options.adapt_single,
             "nrefine": options.nrefine,
+            "h_only": options.h_only
             }
     if options.well:
         kwargs.update({"potential": "well"})
