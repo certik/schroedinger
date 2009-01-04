@@ -2,7 +2,8 @@
 print "loading"
 
 from tables import openFile
-from pylab import plot, show, legend, grid, xlabel, ylabel, yscale
+from pylab import plot, show, legend, grid, xlabel, ylabel, yscale, \
+        savefig, title
 import sys
 
 print "plotting"
@@ -16,7 +17,7 @@ x = table.col("DOF")
 errs = table.col("eig_errors")
 for i in range(4):
     y = errs[:, i]
-    plot(x, y, linewidth=2, label="single, eig %d" % i)
+    plot(x, y, linewidth=2, label="eig %d" % i)
     plot(x, y, "kD")
 
 h5file.close()
@@ -24,6 +25,8 @@ h5file.close()
 xlabel("DOF")
 ylabel("error [%]")
 yscale("log", basey=10)
+title("adapt to one eigenvector per iteration")
 grid(True)
 legend(loc="upper right")
-show()
+#show()
+savefig("single-single.png")
