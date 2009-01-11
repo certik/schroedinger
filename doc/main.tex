@@ -40,7 +40,7 @@ $$
 \over|x' - x|}\d x'
 +f\left( \sum_{m=1}^4\phi_m^2(x) \right)
 $$
-So we can write everything as just one (nonlinear)
+Now we can write everything as just one (nonlinear)
 equation:
 $$
 \left(-\nabla^2
@@ -54,23 +54,26 @@ $$
 
 \section{FE Discretization}
 
-Weak formulation:
+The correspondig discrete problem has the form
 $$
-\int_\Omega \nabla\phi_n\cdot\nabla v_i+\left[
+\int_\Omega \nabla\phi_n(x)\cdot\nabla v_i(x)+\left[
 -{Z\over r}+
 \half \int_\Omega {
 \sum_{m=1}^4 \phi_m^2(x')
 \over|x' - x|}\d x'
 +f\left( \sum_{m=1}^4\phi_m^2(x) \right)
 \right]
-\phi_n v_i  \d x=
+\phi_n(x) v_i(x)  \d x=
 $$
 $$
 =\int_\Omega
-\epsilon_n\phi_n v_i \d x
+\epsilon_n\phi_n(x) v_i(x) \d x,\quad\quad n = 1, 2, \dots, 4;\quad
+i = 1, 2, \dots, N
 $$
-Finite element discretization:
-$$\phi_n = \phi_n(y^{(n)}) = \sum_{j=1}^N y_j^{(n)} v_j(x)$$
+where
+$$\phi_n = \phi_n({\bf Y}^{(n)}) = \sum_{j=1}^N y_j^{(n)} v_j(x)$$
+Here ${\bf Y}^{(n)} = (y_1^{(n)}, y_2^{(n)}, \dots, y_N^{(n)})^T$ is the vector
+of unknown coefficients for the $n$th wavefunction $\phi_n(x)$.
 
 \section{Jacobian}
 
