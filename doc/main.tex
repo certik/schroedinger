@@ -81,9 +81,9 @@ $$\phi_n = \phi_n({\bf Y}^{(n)}) = \sum_{j=1}^N y_j^{(n)} v_j(x)$$
 Here ${\bf Y}^{(n)} = (y_1^{(n)}, y_2^{(n)}, \dots, y_N^{(n)})^T$ is the vector
 of unknown coefficients for the $n$th wavefunction $\phi_n(x)$. Our equation
 can then be written in the compact form
-$${\bf F}({\bf Y}) = {\bf 0}$$
+$${\bf F}({\bf Y}^{(n)}) = {\bf 0},\quad\quad n = 1, 2, \dots, 4$$
 where ${\bf F} = (F_1, F_2, \dots, F_N)^T$ with
-$$F_i({\bf Y}) =
+$$F_i({\bf Y}^{(n)}) =
 \int_\Omega \nabla\phi_n(x)\cdot\nabla v_i(x)+\left[
 -{Z\over r}+
 \half \int_\Omega {
@@ -95,11 +95,8 @@ $$F_i({\bf Y}) =
 $$
 $$
 -\int_\Omega
-\epsilon_n\phi_n(x) v_i(x) \d x,\quad\quad n = 1, 2, \dots, 4
+\epsilon_n\phi_n(x) v_i(x) \d x
 $$
-
-Question: what to do with the $n$ index? Should it be appended to the elements
-of ${\bf F}$, or just added as an index to ${\bf F}^{(n)}$?
 
 \section{Jacobian}
 
