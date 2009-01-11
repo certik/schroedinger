@@ -1,5 +1,7 @@
 \documentclass[11pt]{article}
 
+\input macros
+
 \begin{document}
 
 \section{Introduction}
@@ -14,13 +16,59 @@ $$ V = -{Z\over r} + V_H + V_{xc} $$
 $$
 \left(-\nabla^2+V\right)\phi_m = \epsilon_m\phi_m,\quad\quad m = 1, 2, \dots, 4
 $$
-$$ n = \sum_{m=1}^4 |\phi_m|^2 $$
+$$ n = \sum_{m=1}^4 \phi_m^2 $$
 $$ V_{xc} = f(n) $$
 $$ \nabla^2 V_H = n $$
 
+\section{Reformulation}
+
+Let's write everything in terms of $\phi_m(x)$ explicitly:
+
+$$n(x) = %n(y^{(1)}, \dots, y^{(4)}) =
+\sum_{m=1}^4 \phi_m^2(x)$$
+$$V_{xc}(x) = f(n(x)) = f\left( \sum_{m=1}^4\phi_m^2(x) \right)$$
+$$V_H(x) = \half \int_\Omega {n(x')\over|x' - x|}\d x'=
+\half \int_\Omega {
+\sum_{m=1}^4 \phi_m^2(x')
+\over|x' - x|}\d x'
+$$
+$$V(x) = -{Z\over r} + V_H(x) + V_{xc}(x)=$$
+$$
+=-{Z\over r}+
+\half \int_\Omega {
+\sum_{m=1}^4 \phi_m^2(x')
+\over|x' - x|}\d x'
++f\left( \sum_{m=1}^4\phi_m^2(x) \right)
+$$
+$$
+\left(-\nabla^2
+-{Z\over r}+
+\half \int_\Omega {
+\sum_{m=1}^4 \phi_m^2(x')
+\over|x' - x|}\d x'
++f\left( \sum_{m=1}^4\phi_m^2(x) \right)
+\right)\phi_n = \epsilon_n\phi_n,\quad\quad n = 1, 2, \dots, 4
+$$
+
 \section{FE Discretization}
 
-$$\phi_m = \phi_m(Y^{(m)}) = \sum_{j=1}^N Y_j^{(m)} v_j$$
+Weak formulation:
+$$
+\int_\Omega \nabla\phi_m\cdot\nabla v_i+\left[
+-{Z\over r}+
+\half \int_\Omega {
+\sum_{m=1}^4 \phi_m^2(x')
+\over|x' - x|}\d x'
++f\left( \sum_{m=1}^4\phi_m^2(x) \right)
+\right]
+\phi_m v_i  \d x=
+$$
+$$
+=\int_\Omega
+\epsilon_m\phi_m v_i \d x
+$$
+Finite element discretization:
+$$\phi_m = \phi_m(y^{(m)}) = \sum_{j=1}^N y_j^{(m)} v_j$$
 
 \section{Jacobian}
 
