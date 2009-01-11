@@ -78,7 +78,7 @@ def solve(A, B, n_eigs=4, verbose=False):
     if verbose:
         print "solving (%d x %d)" % (n, n)
     Atau = A.copy()
-    tau = -2
+    tau = -1
     Atau.shift(-tau, B)
     K = precon.jacobi(Atau)
     A = A.to_sss()
@@ -239,8 +239,10 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     rp2.set_spaces(rspace);
     set_forms7(rp2)
 
-    screen_width = 1280
-    screen_height = 800
+    #screen_width = 1280
+    #screen_height = 800
+    screen_width = 1152
+    screen_height = 768
     #screen_width = 1680
     #screen_height = 1050
     #screen_width = 1024

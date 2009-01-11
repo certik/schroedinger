@@ -19,13 +19,22 @@ plot(x, y, "b-", linewidth=2, label="h-FEM (linear) total error")
 plot(x, y, "bD")
 h5file.close()
 
+h5file = openFile("report-h2-c.h5")
+table = getattr(h5file.root, sim_name).iterations
+x = table.col("DOF")
+y = table.col("total_error")
+plot(x, y, "c-", linewidth=2, label="h-FEM (quadratic, thr=0.1) total error")
+plot(x, y, "cD")
+h5file.close()
+
 h5file = openFile("report-h2.h5")
 table = getattr(h5file.root, sim_name).iterations
 x = table.col("DOF")
 y = table.col("total_error")
-plot(x, y, "m-", linewidth=2, label="h-FEM (quadratic) total error")
+plot(x, y, "m-", linewidth=2, label="h-FEM (quadratic, thr=0.3) total error")
 plot(x, y, "mD")
 h5file.close()
+
 
 h5file = openFile("report-h2-b.h5")
 table = getattr(h5file.root, sim_name).iterations
@@ -35,13 +44,6 @@ plot(x, y, "y-", linewidth=2, label="h-FEM (quadratic, thr=0.7) total error")
 plot(x, y, "yD")
 h5file.close()
 
-h5file = openFile("report-h2-c.h5")
-table = getattr(h5file.root, sim_name).iterations
-x = table.col("DOF")
-y = table.col("total_error")
-plot(x, y, "c-", linewidth=2, label="h-FEM (quadratic, thr=0.1) total error")
-plot(x, y, "cD")
-h5file.close()
 
 h5file = openFile("report-hp.h5")
 table = getattr(h5file.root, sim_name).iterations
@@ -54,8 +56,8 @@ h5file.close()
 xlabel("DOF")
 ylabel("error [%]")
 yscale("log", basey=10)
-title("adapt to one eigenvector per iteration")
+title("adapting to sum of all eigenvectors per iteration")
 grid(True)
 legend(loc="upper right")
-show()
-#savefig("single-single.png")
+#show()
+savefig("adapt-all.png")
