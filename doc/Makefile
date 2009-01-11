@@ -1,7 +1,7 @@
-f=main.tex
+f=main
 
 all:
-	pdflatex $f
+	pdflatex $f.tex
 
 clean:
-	rm -f $f.aux
+	rm -f $f.aux $f.log

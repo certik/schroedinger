@@ -1,14 +1,30 @@
 \documentclass[11pt]{article}
 
-
 \begin{document}
 
 \section{Introduction}
 
 This is a solver for the Schr\"odinger equation in the framework of DFT.
 
+\section{Problem}
+
+The task is to find such a charge density $n$, so that all the equations below hold (e.g. are
+self-consistent):
+$$ V = -{Z\over r} + V_H + V_{xc} $$
+$$
+\left(-\nabla^2+V\right)\phi_m = \epsilon_m\phi_m,\quad\quad m = 1, 2, \dots, 4
+$$
+$$ n = \sum_{m=1}^4 |\phi_m|^2 $$
+$$ V_{xc} = f(n) $$
+$$ \nabla^2 V_H = n $$
+
+\section{FE Discretization}
+
+$$\phi_m = \phi_m(Y^{(m)}) = \sum_{j=1}^N Y_j^{(m)} v_j$$
+
 \section{Jacobian}
 
-xx
+
+
 \end{document}
 
