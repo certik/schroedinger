@@ -1,4 +1,4 @@
-from hermes2d cimport scalar, RealFunction, RefMap, DiscreteProblem, \
+from hermes2d cimport scalar, RealFunction, RefMap, WeakForm, \
         int_grad_u_grad_v, int_v, H1Space, Solution, int_u_dvdx, \
         int_u_dvdy, int_w_nabla_u_v, int_u_v, BF_ANTISYM, BC_ESSENTIAL, \
         BC_NONE, int_F_u_v, c_sqrt, BC_NATURAL, int_F_v, MeshFunction, \
@@ -59,11 +59,11 @@ def set_bc_schroed_1d(H1Space space):
     space.thisptr.set_bc_types(&bc_type_schroed)
     space.thisptr.set_bc_values(&bc_values_schroed_1d)
 
-def set_forms7(DiscreteProblem dp):
-    dp.thisptr.set_bilinear_form(0, 0, &bilinear_form_schroed)
+def set_forms7(WeakForm dp):
+    dp.thisptr.add_biform(0, 0, &bilinear_form_schroed)
     #dp.thisptr.set_linear_form(0, &linear_form);
 
-def set_forms8(DiscreteProblem dp, pot_type, MeshFunction potential2):
+def set_forms8(WeakForm dp, pot_type, MeshFunction potential2):
     """
     Set the forms for the matrix A.
 
@@ -79,11 +79,11 @@ def set_forms8(DiscreteProblem dp, pot_type, MeshFunction potential2):
     else:
         use_other_terms = 1
         potential_other_terms = <c_MeshFunction *>(potential2.thisptr)
-    dp.thisptr.set_bilinear_form(0, 0, &bilinear_form_schroed1)
+    dp.thisptr.add_biform(0, 0, &bilinear_form_schroed1)
     #dp.thisptr.set_linear_form(0, &linear_form);
 
-def set_forms8_1d(DiscreteProblem dp):
-    dp.thisptr.set_bilinear_form(0, 0, &bilinear_form_schroed1_1d)
+def set_forms8_1d(WeakForm dp):
+    dp.thisptr.add_biform(0, 0, &bilinear_form_schroed1_1d)
     #dp.thisptr.set_linear_form(0, &linear_form);
 
 cdef scalar bilinear_form(RealFunction *fu, RealFunction *fv,
@@ -101,15 +101,15 @@ cdef scalar linear_form(RealFunction *fv, RefMap *rv):
     return int_F_v(&F_poisson, fv, rv)
 
 
-def set_forms_poisson(DiscreteProblem dp, MeshFunction rho=None):
+def set_forms_poisson(WeakForm dp, MeshFunction rho=None):
     """
     rho ... the right hand side of the Poisson equation
     """
     global rho_poisson
     if rho is not None:
         rho_poisson = <c_MeshFunction *>(rho.thisptr)
-    dp.thisptr.set_bilinear_form(0, 0, &bilinear_form)
-    dp.thisptr.set_linear_form(0, &linear_form);
+    dp.thisptr.add_biform(0, 0, &bilinear_form)
+    dp.thisptr.add_liform(0, &linear_form);
 
 cdef extern from "dft.h":
     double vxc(double n, int relat)
