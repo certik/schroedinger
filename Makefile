@@ -14,7 +14,7 @@ all: cschroed.so
 cschroed.so: dft.o
 
 %.c: %.pyx
-	$(CYTHON) -I$(HERMES)/python $<
+	$(CYTHON) -I$(HERMES) $<
 
 %.o : %.c
 	$(CXX) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
