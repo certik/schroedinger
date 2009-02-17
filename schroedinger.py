@@ -460,21 +460,20 @@ def poisson_solver(rho, prec=0.1):
     wf = WeakForm(1)
     set_forms_poisson(wf, rho)
     solver = DummySolver()
-    sys = LinSystem(wf, solver)
-    sys.set_spaces(space)
-    sys.set_pss(pss)
-
-    rp = RefSystem(sys)
-    rp.copy(dp)
 
     # assemble the stiffness matrix and solve the system
     for i in range(10):
+        sys = LinSystem(wf, solver)
+        sys.set_spaces(space)
+        sys.set_pss(pss)
+
         sln = Solution()
         print "poisson: assembly coarse"
-        dp.assemble()
+        sys.assemble()
         print "poisson: done"
-        dp.solve_system(sln)
+        sys.solve_system(sln)
 
+        rp = RefSystem(sys)
         rsln = Solution()
         print "poisson: assembly reference"
         rp.assemble()
