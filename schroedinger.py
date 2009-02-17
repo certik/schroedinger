@@ -349,6 +349,7 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             print "   \-Done."
             print_eigs(eigs, E_exact)
         rs = []
+        rspace = rsys1.get_ref_space(0)
 
         n = sols.shape[1]
         for i in range(n):
