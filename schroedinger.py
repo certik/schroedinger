@@ -28,9 +28,9 @@ from scipy.sparse import coo_matrix
 from pysparse import spmatrix, jdsym, precon, itsolvers
 
 from hermes2d import (initialize, glut_main_loop, Mesh, H1Shapeset,
-        PrecalcShapeset, H1Space, DiscreteProblem, Solution, ScalarView,
+        PrecalcShapeset, H1Space, LinSystem, WeakForm, Solution, ScalarView,
         BaseView, MeshView, H1OrthoHP, OrderView, MatrixView, set_verbose,
-        set_warn_integration)
+        set_warn_integration, DummySolver, RefSystem)
 
 from cschroed import set_forms7, set_forms8, set_forms_poisson, get_vxc
 
@@ -208,33 +208,16 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     #bview = BaseView()
     #bview.show(space)
 
-    dp1 = DiscreteProblem()
+    wf1 = WeakForm(1)
     # this is induced by set_verbose():
     #dp1.set_quiet(not verbose)
-    dp1.set_num_equations(1)
-    dp1.set_spaces(space)
-    dp1.set_pss(pss)
-    set_forms8(dp1, pot_type, potential2)
-    dp2 = DiscreteProblem()
+    set_forms8(wf1, pot_type, potential2)
+    wf2 = WeakForm(1)
     # this is induced by set_verbose():
     #dp2.set_quiet(not verbose)
-    dp2.set_num_equations(1)
-    dp2.set_spaces(space)
-    dp2.set_pss(pss)
-    set_forms7(dp2)
+    set_forms7(wf2)
 
-    rmesh = Mesh()
-    rspace = H1Space(rmesh, shapeset)
-
-    rp1 = DiscreteProblem()
-    rp1.copy(dp1)
-    rp1.set_spaces(rspace);
-    set_forms8(rp1, pot_type, potential2)
-
-    rp2 = DiscreteProblem()
-    rp2.copy(dp2)
-    rp2.set_spaces(rspace);
-    set_forms7(rp2)
+    solver = DummySolver()
 
     w = 320
     h = 320
@@ -262,16 +245,21 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
             iteration["n"] = it
 
         #mesh.save("refined2.mesh")
+        sys1 = LinSystem(wf1, solver)
+        sys1.set_spaces(space)
+        sys1.set_pss(pss)
+        sys2 = LinSystem(wf2, solver)
+        sys2.set_spaces(space)
+        sys2.set_pss(pss)
+
         if verbose_level >= 1:
             print "Assembling the matrices A, B."
-        dp1.create_matrix()
-        dp1.assemble_matrix_and_rhs()
-        dp2.create_matrix()
-        dp2.assemble_matrix_and_rhs()
+        sys1.assemble()
+        sys2.assemble()
         if verbose_level == 2:
             print "converting matrices A, B"
-        A = dp1.get_matrix()
-        B = dp2.get_matrix()
+        A = sys1.get_matrix()
+        B = sys2.get_matrix()
         if verbose_level >= 1:
             n = A.shape[0]
             print "Solving the problem Ax=EBx  (%d x %d)." % (n, n)
@@ -332,21 +320,17 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
 
         if verbose_level >= 1:
             print "reference: initializing mesh."
-        rmesh.copy(mesh)
-        rmesh.refine_all_elements()
-        rspace.copy_orders(space, 1)
-        rspace.assign_dofs()
 
+        rsys1 = RefSystem(sys1)
+        rsys2 = RefSystem(sys2)
         if verbose_level >= 1:
             print "reference: assembling the matrices A, B."
-        rp1.create_matrix()
-        rp1.assemble_matrix_and_rhs()
-        rp2.create_matrix()
-        rp2.assemble_matrix_and_rhs()
+        rsys1.assemble()
+        rsys2.assemble()
         if verbose_level == 2:
             print "converting matrices A, B"
-        A = rp1.get_matrix()
-        B = rp2.get_matrix()
+        A = rsys1.get_matrix()
+        B = rsys2.get_matrix()
         if verbose_level >= 1:
             n = A.shape[0]
             print "reference: solving the problem Ax=EBx  (%d x %d)." % (n, n)
@@ -472,37 +456,27 @@ def poisson_solver(rho, prec=0.1):
     space.assign_dofs()
 
     # initialize the discrete problem
-    dp = DiscreteProblem()
-    dp.set_num_equations(1)
-    dp.set_spaces(space)
-    dp.set_pss(pss)
-    set_forms_poisson(dp, rho)
+    wf = WeakForm(1)
+    set_forms_poisson(wf, rho)
+    solver = DummySolver()
+    sys = LinSystem(wf, solver)
+    sys.set_spaces(space)
+    sys.set_pss(pss)
 
-    rmesh = Mesh()
-    rspace = H1Space(rmesh, shapeset)
-
-    rp = DiscreteProblem()
+    rp = RefSystem(sys)
     rp.copy(dp)
-    rp.set_spaces(rspace);
-    set_forms_poisson(rp)
 
     # assemble the stiffness matrix and solve the system
     for i in range(10):
         sln = Solution()
-        dp.create_matrix()
         print "poisson: assembly coarse"
-        dp.assemble_matrix_and_rhs()
+        dp.assemble()
         print "poisson: done"
         dp.solve_system(sln)
 
-        rmesh.copy(mesh)
-        rmesh.refine_all_elements()
-        rspace.copy_orders(space, 1)
-        rspace.assign_dofs()
         rsln = Solution()
-        rp.create_matrix()
         print "poisson: assembly reference"
-        rp.assemble_matrix_and_rhs()
+        rp.assemble()
         print "poisson: done"
         rp.solve_system(rsln)
 
