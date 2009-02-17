@@ -5,16 +5,16 @@ HERMES := $(shell script/config.py hermes2d_path)
 
 CYTHON := cython
 CXX := g++
-LIBS := -lhermes2d-gcc-O-real -lglut -lJudy -lumfpack -lamd -lblas
-CFLAGS := -Wfatal-errors -I/usr/include/python$(PYVER) $(OPTFLAGS) -I$(NUMPYINCLUDE)/numpy -I$(HERMES)/include
-LDFLAGS := -Wfatal-errors -Wl,--rpath=$(HERMES)/lib -L$(HERMES)/lib
+LIBS := -lhermes -lglut -lJudy -lumfpack -lamd -lblas
+CFLAGS := -Wfatal-errors -I/usr/include/python$(PYVER) $(OPTFLAGS) -I$(NUMPYINCLUDE)/numpy -I$(HERMES)/../../../include/hermes2d -I$(HERMES)/include
+LDFLAGS := -Wfatal-errors -Wl,--rpath=$(HERMES) -L$(HERMES)
 
 all: cschroed.so
 
 cschroed.so: dft.o
 
 %.c: %.pyx
-	$(CYTHON) -I$(HERMES) $<
+	$(CYTHON) -I$(HERMES)/include $<
 
 %.o : %.c
 	$(CXX) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
