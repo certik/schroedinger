@@ -5,10 +5,7 @@ http://spilka.math.unr.edu/projects/hermes2d/wiki/Projects/SchroedingerEquation
 Compilation
 -----------
 
-Copy 'site_cfg_template.py' to 'site_cfg.py' and adjust the path to hermes2d
-directory in there (alternatively, just hit "make" and it will do the copy
-automatically if 'site_cfg.py' doesn't exist). Then:
-
+$ cmake .
 $ make
 
 Run
