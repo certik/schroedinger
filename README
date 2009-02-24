@@ -5,6 +5,9 @@ http://spilka.math.unr.edu/projects/hermes2d/wiki/Projects/SchroedingerEquation
 Compilation
 -----------
 
+First install hermes2d, so that you can import it from python. This is
+necessary so that cmake can pickup the correct library paths, etc. Then:
+
 $ cmake .
 $ make
 
