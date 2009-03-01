@@ -27,7 +27,7 @@ from numpy import zeros, array
 from scipy.sparse import coo_matrix
 from pysparse import spmatrix, jdsym, precon, itsolvers
 
-from hermes2d import (initialize, glut_main_loop, Mesh, H1Shapeset,
+from hermes2d import (Mesh, H1Shapeset,
         PrecalcShapeset, H1Space, LinSystem, WeakForm, Solution, ScalarView,
         BaseView, MeshView, H1OrthoHP, OrderView, set_verbose,
         set_warn_integration, DummySolver, RefSystem)
@@ -227,8 +227,6 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     for v in viewse:
         v.set_min_max_range(0, 10**-4)
     ord = OrderView("Polynomial Orders", 0, 2*h, w, h)
-    #mat1 = MatrixView("Matrix A", w, 2*h, w, h)
-    #mat2 = MatrixView("Matrix A'", 2*w, 2*h, w, h)
 
     rs = None
 
