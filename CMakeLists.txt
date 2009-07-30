@@ -14,9 +14,10 @@ include_directories(
     ${PYTHON_INCLUDE_PATH}
     ${NUMPY_INCLUDE_PATH}
     ${HERMES2D_INCLUDE}
+    ${HERMES2D_PXD_INCLUDE}
     )
 link_directories(${HERMES2D_LIB})
 set(CYTHON_INCLUDE_DIRECTORIES ${HERMES2D_PXD_INCLUDE})
 set_source_files_properties(dft.c PROPERTIES LANGUAGE CXX)
 cython_add_module(cschroed dft)
-target_link_libraries(cschroed hermes)
+target_link_libraries(cschroed hermes2d-real)
