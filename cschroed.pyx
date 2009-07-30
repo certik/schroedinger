@@ -1,4 +1,4 @@
-from hermes2d cimport scalar, RealFunction, RefMap, WeakForm, \
+from hermes2d._hermes2d cimport scalar, RealFunction, RefMap, WeakForm, \
         int_grad_u_grad_v, int_v, H1Space, Solution, int_u_dvdx, \
         int_u_dvdy, int_w_nabla_u_v, int_u_v, BF_ANTISYM, BC_ESSENTIAL, \
         BC_NONE, int_F_u_v, c_sqrt, BC_NATURAL, int_F_v, MeshFunction, \
