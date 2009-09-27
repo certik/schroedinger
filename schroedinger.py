@@ -224,8 +224,8 @@ def schroedinger_solver(n_eigs=4, iter=2, verbose_level=1, plot=False,
     views = [ScalarView("", i*w, 0, w, h) for i in range(4)]
     viewsm = [ScalarView("", i*w, h, w, h) for i in range(4)]
     viewse = [ScalarView("", i*w, 2*h, w, h) for i in range(4)]
-    for v in viewse:
-        v.set_min_max_range(0, 10**-4)
+    #for v in viewse:
+    #    v.set_min_max_range(0, 10**-4)
     ord = OrderView("Polynomial Orders", 0, 2*h, w, h)
 
     rs = None
