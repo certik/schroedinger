@@ -14,4 +14,10 @@ $ make
 Run
 ---
 
+To get some basic help, do:
+
 $ ./schroedinger.py
+
+To run a simple calculation, do:
+
+$ ./schroedinger.py --well
