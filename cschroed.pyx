@@ -4,6 +4,10 @@ from hermes2d._hermes2d cimport scalar, RealFunction, RefMap, WeakForm, \
         BC_NONE, int_F_u_v, c_sqrt, BC_NATURAL, int_F_v, MeshFunction, \
         c_MeshFunction
 
+from hermes2d._hermes2d cimport scalar, FuncReal, GeomReal, WeakForm, \
+        int_grad_u_grad_v, int_grad_u_grad_v_ord, int_v, malloc, ExtDataReal, \
+        c_Ord, create_Ord, FuncOrd, GeomOrd, ExtDataOrd, int_v_ord
+
 cdef int bc_type_schroed(int marker):
     if marker == 1 or marker == 3:
         return BC_NATURAL
@@ -13,9 +17,13 @@ cdef int bc_type_schroed(int marker):
 cdef scalar bc_values_schroed_1d(int marker, double x, double y):
     return 0
 
-cdef scalar bilinear_form_schroed(RealFunction* fu, RealFunction* fv,
-    RefMap* ru, RefMap* rv):
-  return int_u_v(fu, fv, ru, rv)
+cdef scalar bilinear_form_schroed(int n, double *wt, FuncReal *u, FuncReal *v,
+        GeomReal *e, ExtDataReal *ext):
+    cdef int i
+    cdef double result=0
+    for i in range(n):
+        result += wt[i] * u.val[i] * v.val[i]
+    return result
 
 cdef int potential_type
 cdef int use_other_terms
@@ -47,21 +55,34 @@ cdef double F2(double x, double y):
     cdef double l = 2.0
     return -1/r + l*(l+1)/(2*r**2)
 
-cdef scalar bilinear_form_schroed1(RealFunction* fu, RealFunction* fv,
-                RefMap* ru, RefMap* rv):
-    return int_grad_u_grad_v(fu, fv, ru, rv) / 2 + int_F_u_v(&F, fu, fv, ru, rv)
+cdef scalar bilinear_form_schroed1(int n, double *wt, FuncReal *u, FuncReal *v,
+        GeomReal *e, ExtDataReal *ext):
+    cdef int i
+    cdef double result=0
+    for i in range(n):
+        result += wt[i] * ((u.dx[i]*v.dx[i] + u.dy[i]*v.dy[i])/2 + \
+                F(e.x[i], e.y[i]) * u.val[i]*v.val[i])
+    return result
 
-cdef scalar bilinear_form_schroed1_1d(RealFunction* fu, RealFunction* fv,
-                RefMap* ru, RefMap* rv):
-    return int_grad_u_grad_v(fu, fv, ru, rv) / 2 + int_F_u_v(&F2, fu, fv, ru, rv)
+#cdef scalar bilinear_form_schroed1_1d(RealFunction* fu, RealFunction* fv,
+#                RefMap* ru, RefMap* rv):
+#    return int_grad_u_grad_v(fu, fv, ru, rv) / 2 + int_F_u_v(&F2, fu, fv, ru, rv)
 
-def set_bc_schroed_1d(H1Space space):
-    space.thisptr.set_bc_types(&bc_type_schroed)
-    space.thisptr.set_bc_values(&bc_values_schroed_1d)
+#def set_bc_schroed_1d(H1Space space):
+#    space.thisptr.set_bc_types(&bc_type_schroed)
+#    space.thisptr.set_bc_values(&bc_values_schroed_1d)
+
+cdef c_Ord bilinear_form_ord(int n, double *wt, FuncOrd *u, FuncOrd *v, GeomOrd
+        *e, ExtDataOrd *ext):
+    return create_Ord(20)
+
+cdef c_Ord linear_form_ord(int n, double *wt, FuncOrd *u, GeomOrd
+        *e, ExtDataOrd *ext):
+    return create_Ord(20)
+
 
 def set_forms7(WeakForm dp):
-    dp.thisptr.add_biform(0, 0, &bilinear_form_schroed)
-    #dp.thisptr.set_linear_form(0, &linear_form);
+    dp.thisptr.add_biform(0, 0, &bilinear_form_schroed, &bilinear_form_ord)
 
 def set_forms8(WeakForm dp, pot_type, MeshFunction potential2):
     """
@@ -79,16 +100,15 @@ def set_forms8(WeakForm dp, pot_type, MeshFunction potential2):
     else:
         use_other_terms = 1
         potential_other_terms = <c_MeshFunction *>(potential2.thisptr)
-    dp.thisptr.add_biform(0, 0, &bilinear_form_schroed1)
-    #dp.thisptr.set_linear_form(0, &linear_form);
+    dp.thisptr.add_biform(0, 0, &bilinear_form_schroed1, &bilinear_form_ord)
 
-def set_forms8_1d(WeakForm dp):
-    dp.thisptr.add_biform(0, 0, &bilinear_form_schroed1_1d)
-    #dp.thisptr.set_linear_form(0, &linear_form);
-
-cdef scalar bilinear_form(RealFunction *fu, RealFunction *fv,
-        RefMap *ru, RefMap *rv):
-    return int_grad_u_grad_v(fu, fv, ru, rv)
+cdef scalar bilinear_form(int n, double *wt, FuncReal *u, FuncReal *v,
+        GeomReal *e, ExtDataReal *ext):
+    cdef int i
+    cdef double result=0
+    for i in range(n):
+        result += wt[i] * (u.dx[i]*v.dx[i] + u.dy[i]*v.dy[i])
+    return result
 
 cdef c_MeshFunction *rho_poisson
 
@@ -97,9 +117,13 @@ cdef double F_poisson(double x, double y):
     # check it
     return rho_poisson.get_pt_value(x, y)
 
-cdef scalar linear_form(RealFunction *fv, RefMap *rv):
-    return int_F_v(&F_poisson, fv, rv)
-
+cdef scalar linear_form(int n, double *wt, FuncReal *u, GeomReal
+        *e, ExtDataReal *ext):
+    cdef int i
+    cdef double result=0
+    for i in range(n):
+        result += wt[i] * (F_poisson(e.x[i], e.y[i]) * u.val[i])
+    return result
 
 def set_forms_poisson(WeakForm dp, MeshFunction rho=None):
     """
@@ -108,8 +132,8 @@ def set_forms_poisson(WeakForm dp, MeshFunction rho=None):
     global rho_poisson
     if rho is not None:
         rho_poisson = <c_MeshFunction *>(rho.thisptr)
-    dp.thisptr.add_biform(0, 0, &bilinear_form)
-    dp.thisptr.add_liform(0, &linear_form);
+    dp.thisptr.add_biform(0, 0, &bilinear_form, &bilinear_form_ord)
+    dp.thisptr.add_liform(0, &linear_form, &linear_form_ord);
 
 cdef extern from "dft.h":
     double vxc(double n, int relat)
